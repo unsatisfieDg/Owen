@@ -1,154 +1,166 @@
 import React from 'react';
-import { Target, TrendingUp, Droplets, Scale, Lightbulb, CheckCircle } from 'lucide-react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
-const NutritionInfo = ({ nutrition, userData }) => {
+const NutritionInfo = ({ nutrition, userData, darkMode }) => {
   if (!nutrition.tdee) return null;
 
-  const isMaintenance = userData?.goal === 'maintain';
-
   return (
-    <div className="bg-white dark:bg-[#1f1f1f] rounded-2xl p-6 transition-all duration-300 border border-gray-100 dark:border-white/8">
+    <ScrollView style={styles.container}>
+      {/* BMI Card */}
+      <View style={[styles.card, darkMode && styles.cardDark]}>
+        <View style={styles.cardHeader}>
+          <Icon name="scale-bathroom" size={20} color="#3b82f6" />
+          <Text style={[styles.cardTitle, darkMode && styles.textDark]}>BMI</Text>
+        </View>
+        <Text style={[styles.cardValue, darkMode && styles.textDark]}>{nutrition.bmi}</Text>
+        <Text style={styles.cardSubtitle}>{nutrition.bmiCategory}</Text>
+        <Text style={[styles.cardDescription, darkMode && styles.textSecondaryDark]}>{nutrition.bmiRecommendation}</Text>
+      </View>
 
-      {/* BMI and Basic Info */}
-      <div className={`grid grid-cols-1 ${isMaintenance ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-4 mb-6`}>
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 p-4 rounded-xl">
-          <div className="flex items-center gap-2 mb-2">
-            <Scale className="w-5 h-5 text-blue-500" />
-            <span className="font-medium text-gray-900 dark:text-white">BMI</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">{nutrition.bmi}</div>
-          <div className={`text-sm font-medium ${nutrition.bmiColor}`}>
-            {nutrition.bmiCategory}
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-            {nutrition.bmiRecommendation}
-          </div>
-        </div>
+      {/* Calories Card */}
+      <View style={[styles.card, darkMode && styles.cardDark]}>
+        <View style={styles.cardHeader}>
+          <Icon name="fire" size={20} color="#ef4444" />
+          <Text style={[styles.cardTitle, darkMode && styles.textDark]}>Daily Calories</Text>
+        </View>
+        <Text style={[styles.cardValue, darkMode && styles.textDark]}>{nutrition.tdee} kcal</Text>
+        <Text style={[styles.cardDescription, darkMode && styles.textSecondaryDark]}>{nutrition.calorieAdjustment}</Text>
+      </View>
 
-        {!isMaintenance && (
-          <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="w-5 h-5 text-green-500" />
-              <span className="font-medium text-gray-900 dark:text-white">Target Weight</span>
-            </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {nutrition.targetWeight ? `${nutrition.targetWeight}kg` : 'Not set'}
-            </div>
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-              🎯 Your goal/milestone
-            </div>
-          </div>
-        )}
+      {/* Macros Grid */}
+      <View style={styles.macrosGrid}>
+        <View style={[styles.macroCard, darkMode ? { backgroundColor: 'rgba(239, 68, 68, 0.2)' } : { backgroundColor: '#fee2e2' }]}>
+          <View style={styles.macroDot} />
+          <Text style={[styles.macroName, darkMode && styles.textDark]}>Protein</Text>
+          <Text style={[styles.macroValue, darkMode && styles.textDark]}>{nutrition.protein}g</Text>
+          <Text style={[styles.macroDescription, darkMode && styles.textSecondaryDark]}>
+            {nutrition.proteinGPerLb || '0.9'} g/lb
+          </Text>
+        </View>
 
-        <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-4 rounded-xl">
-          <div className="flex items-center gap-2 mb-2">
-            <Droplets className="w-5 h-5 text-purple-500" />
-            <span className="font-medium text-gray-900 dark:text-white">Water Intake</span>
-          </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {nutrition.waterIntake}ml
-          </div>
-          <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-            Daily recommendation
-          </div>
-        </div>
-      </div>
+        <View style={[styles.macroCard, darkMode ? { backgroundColor: 'rgba(16, 185, 129, 0.2)' } : { backgroundColor: '#d1fae5' }]}>
+          <View style={[styles.macroDot, { backgroundColor: '#10b981' }]} />
+          <Text style={[styles.macroName, darkMode && styles.textDark]}>Carbs</Text>
+          <Text style={[styles.macroValue, darkMode && styles.textDark]}>{nutrition.carbs}g</Text>
+          <Text style={[styles.macroDescription, darkMode && styles.textSecondaryDark]}>
+            {nutrition.carbsGPerLb || '1.75'} g/lb
+          </Text>
+        </View>
+      </View>
 
-      {/* Calorie and Macro Breakdown */}
-      <div className="space-y-4 mb-6">
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 p-4 rounded-xl">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold text-gray-900 dark:text-white">Daily Calories</h4>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              {nutrition.calorieAdjustment}
-            </span>
-          </div>
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {nutrition.tdee} kcal
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            BMR: {nutrition.bmr} kcal | TDEE: {nutrition.tdee} kcal
-          </div>
-          {nutrition.currentWeightUsed && nutrition.referenceWeight && (
-            <div className="mt-2 text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
-              <Target className="w-3 h-3" />
-              <span>Using current weight ({nutrition.referenceWeight}kg) for calculations</span>
-            </div>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-4 rounded-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              <span className="font-medium text-gray-900 dark:text-white">Protein</span>
-            </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {nutrition.protein}g
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              {nutrition.proteinGPerLb || '0.9'} g/lb • {nutrition.proteinPercent}
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-4 rounded-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="font-medium text-gray-900 dark:text-white">Carbs</span>
-            </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {nutrition.carbs}g
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              {nutrition.carbsGPerLb || '1.75'} g/lb • {nutrition.carbsPercent}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Goal-Specific Recommendations */}
+      {/* Goal Recommendations */}
       {nutrition.goalRecommendations && (
-        <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 p-4 rounded-xl">
-          <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="w-5 h-5 text-indigo-500" />
-            <h4 className="font-semibold text-gray-900 dark:text-white">
-              {nutrition.goalRecommendations.title} Tips
-            </h4>
-          </div>
-          <div className="space-y-2">
-            {nutrition.goalRecommendations.tips.map((tip, index) => (
-              <div key={index} className="flex items-start gap-2">
-                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{tip}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 pt-3 border-t border-indigo-200 dark:border-indigo-700">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium text-gray-900 dark:text-white">Protein:</span>
-                <span className="text-gray-600 dark:text-gray-400 ml-1">
-                  {nutrition.goalRecommendations.protein}
-                </span>
-              </div>
-              <div>
-                <span className="font-medium text-gray-900 dark:text-white">Carbs:</span>
-                <span className="text-gray-600 dark:text-gray-400 ml-1">
-                  {nutrition.goalRecommendations.carbs}
-                </span>
-              </div>
-              <div className="col-span-2">
-                <span className="font-medium text-gray-900 dark:text-white">Calories:</span>
-                <span className="text-gray-600 dark:text-gray-400 ml-1">
-                  {nutrition.goalRecommendations.calories}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <View style={[styles.card, darkMode && styles.cardDark]}>
+          <View style={styles.cardHeader}>
+            <Icon name="lightbulb" size={20} color="#f59e0b" />
+            <Text style={[styles.cardTitle, darkMode && styles.textDark]}>{nutrition.goalRecommendations.title}</Text>
+          </View>
+          {nutrition.goalRecommendations.tips.slice(0, 3).map((tip, index) => (
+            <View key={index} style={styles.tip}>
+              <Icon name="check-circle" size={16} color="#10b981" />
+              <Text style={[styles.tipText, darkMode && styles.textDark]}>{tip}</Text>
+            </View>
+          ))}
+        </View>
       )}
-    </div>
+    </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  cardDark: {
+    backgroundColor: '#262626',
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginLeft: 8,
+  },
+  cardValue: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  textDark: {
+    color: '#fff',
+  },
+  textSecondaryDark: {
+    color: 'rgba(255,255,255,0.7)',
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6366f1',
+    marginBottom: 4,
+  },
+  cardDescription: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  macrosGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  macroCard: {
+    flex: 1,
+    borderRadius: 16,
+    padding: 16,
+  },
+  macroDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#ef4444',
+    marginBottom: 8,
+  },
+  macroName: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  macroValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  macroDescription: {
+    fontSize: 10,
+    color: '#6b7280',
+  },
+  tip: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  tipText: {
+    fontSize: 12,
+    color: '#374151',
+    marginLeft: 8,
+    flex: 1,
+  },
+});
 
 export default NutritionInfo;

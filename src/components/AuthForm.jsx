@@ -1,9 +1,26 @@
 import React, { useState } from 'react';
-import { User, Lock, ArrowRight, Sparkles, Shield } from 'lucide-react';
-import PasswordReset from './PasswordReset';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  Dimensions
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
-const AuthForm = ({ onAuth, isLogin = true, onToggleMode }) => {
-  const [showPasswordReset, setShowPasswordReset] = useState(false);
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallScreen = SCREEN_WIDTH < 375;
+
+const AuthForm = ({ onAuth }) => {
+  const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -15,7 +32,6 @@ const AuthForm = ({ onAuth, isLogin = true, onToggleMode }) => {
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear errors when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -53,9 +69,7 @@ const AuthForm = ({ onAuth, isLogin = true, onToggleMode }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -79,179 +93,280 @@ const AuthForm = ({ onAuth, isLogin = true, onToggleMode }) => {
     setFormData({ username: '', password: '', confirmPassword: '' });
     setErrors({});
     setAuthError('');
-    onToggleMode();
+    setIsLogin(!isLogin);
   };
 
-  // Show password reset form if requested
-  if (showPasswordReset) {
-    return (
-      <PasswordReset
-        onBack={() => setShowPasswordReset(false)}
-        onResetComplete={() => {
-          setShowPasswordReset(false);
-          alert('Password reset successful! You can now sign in with your new password.');
-        }}
-      />
-    );
-  }
-
   return (
-    <div className="bg-white/90 dark:bg-[#1f1f1f]/90 backdrop-blur-lg rounded-2xl shadow-2xl p-8 max-w-md mx-auto border border-white/20 dark:border-white/8 animate-fade-in-scale">
-      <div className="text-center mb-8">
-        <div className="relative inline-block mb-4">
-          <User className="w-12 h-12 text-blue-500 mx-auto animate-bounce" />
-          <div className="absolute -top-2 -right-2">
-            <Sparkles className="w-6 h-6 text-yellow-400 animate-pulse" />
-          </div>
-        </div>
-        <h2 className="text-3xl font-bold mb-2 gradient-text animate-fade-in-up">
-          {isLogin ? 'Welcome Back!' : 'Create Account'}
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          {isLogin ? 'Sign in to continue your nutrition journey' : 'Join MacroGenie and start tracking your nutrition'}
-        </p>
-      </div>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+        <View style={styles.card}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.iconContainer}>
+              <Icon name="account-circle" size={48} color="#6366f1" />
+            </View>
+            <Text style={styles.title}>
+              {isLogin ? 'Welcome Back!' : 'Create Account'}
+            </Text>
+            <Text style={styles.subtitle}>
+              {isLogin
+                ? 'Sign in to continue your nutrition journey'
+                : 'Join MacroGenius and start tracking your nutrition'}
+            </Text>
+          </View>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Auth Error Message */}
-        {authError && (
-          <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500 rounded-xl p-4 animate-shake">
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-red-500" />
-              <p className="text-red-700 dark:text-red-400 font-medium">{authError}</p>
-            </div>
-          </div>
-        )}
+          {/* Auth Error Message */}
+          {authError ? (
+            <View style={styles.errorContainer}>
+              <Icon name="shield-alert" size={20} color="#ef4444" />
+              <Text style={styles.errorText}>{authError}</Text>
+            </View>
+          ) : null}
 
-        {/* Username Field */}
-        <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Username
-          </label>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Enter your username"
-              value={formData.username}
-              onChange={(e) => handleInputChange('username', e.target.value)}
-              className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-                errors.username ? 'border-red-500' : 'border-gray-300 dark:border-white/10'
-              }`}
-              autoComplete="username"
-            />
-          </div>
-          {errors.username && (
-            <p className="text-red-500 text-sm mt-1">{errors.username}</p>
-          )}
-        </div>
-
-        {/* Password Field */}
-        <div className="animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Password
-          </label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-                errors.password ? 'border-red-500' : 'border-gray-300 dark:border-white/10'
-              }`}
-              autoComplete={isLogin ? 'current-password' : 'new-password'}
-            />
-          </div>
-          {errors.password && (
-            <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-          )}
-          {isLogin && (
-            <div className="text-right">
-              <button
-                type="button"
-                onClick={() => setShowPasswordReset(true)}
-                className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-              >
-                Forgot Password?
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Confirm Password Field (Signup only) */}
-        {!isLogin && (
-          <div className="animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Confirm Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="password"
-                placeholder="Confirm your password"
-                value={formData.confirmPassword}
-                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-                  errors.confirmPassword ? 'border-red-500' : 'border-gray-300 dark:border-white/10'
-                }`}
-                autoComplete="new-password"
+          {/* Username Field */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Username</Text>
+            <View style={styles.inputWrapper}>
+              <Icon name="account" size={20} color="#9ca3af" style={styles.inputIcon} />
+              <TextInput
+                style={[styles.input, errors.username && styles.inputError]}
+                placeholder="Enter your username"
+                value={formData.username}
+                onChangeText={(value) => handleInputChange('username', value)}
+                autoCapitalize="none"
+                autoCorrect={false}
               />
-            </div>
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
-            )}
-          </div>
-        )}
+            </View>
+            {errors.username ? <Text style={styles.fieldError}>{errors.username}</Text> : null}
+          </View>
 
-        {/* Submit Button */}
-        <div className="animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-          <button
-            type="submit"
+          {/* Password Field */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Password</Text>
+            <View style={styles.inputWrapper}>
+              <Icon name="lock" size={20} color="#9ca3af" style={styles.inputIcon} />
+              <TextInput
+                style={[styles.input, errors.password && styles.inputError]}
+                placeholder="Enter your password"
+                value={formData.password}
+                onChangeText={(value) => handleInputChange('password', value)}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+            {errors.password ? <Text style={styles.fieldError}>{errors.password}</Text> : null}
+          </View>
+
+          {/* Confirm Password Field (Signup only) */}
+          {!isLogin && (
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Confirm Password</Text>
+              <View style={styles.inputWrapper}>
+                <Icon name="lock-check" size={20} color="#9ca3af" style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, errors.confirmPassword && styles.inputError]}
+                  placeholder="Confirm your password"
+                  value={formData.confirmPassword}
+                  onChangeText={(value) => handleInputChange('confirmPassword', value)}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+              {errors.confirmPassword ? (
+                <Text style={styles.fieldError}>{errors.confirmPassword}</Text>
+              ) : null}
+            </View>
+          )}
+
+          {/* Submit Button */}
+          <TouchableOpacity
+            style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
             disabled={isLoading}
-            className={`w-full group relative overflow-hidden py-4 px-6 rounded-xl font-bold text-white transition-all duration-300 focus-ring hover-scale ${
-              isLoading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-lg hover:shadow-xl'
-            }`}
           >
-            <div className="flex items-center justify-center gap-2">
+            <LinearGradient
+              colors={isLoading ? ['#9ca3af', '#9ca3af'] : ['#6366f1', '#a855f7']}
+              style={styles.submitGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
               {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>{isLogin ? 'Signing In...' : 'Creating Account...'}</span>
-                </>
+                <ActivityIndicator color="#fff" />
               ) : (
                 <>
-                  <Shield className="w-5 h-5" />
-                  <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+                  <Icon name="shield-check" size={20} color="#fff" />
+                  <Text style={styles.submitText}>
+                    {isLogin ? 'Sign In' : 'Create Account'}
+                  </Text>
+                  <Icon name="arrow-right" size={20} color="#fff" />
                 </>
               )}
-            </div>
-            {!isLoading && (
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            )}
-          </button>
-        </div>
+            </LinearGradient>
+          </TouchableOpacity>
 
-        {/* Switch between Login/Signup */}
-        <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
-          <p className="text-gray-600 dark:text-gray-400">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}
-            <button
-              type="button"
-              onClick={handleToggleMode}
-              className="ml-2 text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
-            >
-              {isLogin ? 'Sign Up' : 'Sign In'}
-            </button>
-          </p>
-        </div>
-      </form>
-    </div>
+          {/* Toggle Mode */}
+          <View style={styles.toggleContainer}>
+            <Text style={styles.toggleText}>
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
+            </Text>
+            <TouchableOpacity onPress={handleToggleMode}>
+              <Text style={styles.toggleButton}>
+                {isLogin ? 'Sign Up' : 'Sign In'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: isSmallScreen ? 16 : 24,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: isSmallScreen ? 16 : 20,
+    padding: isSmallScreen ? 20 : 32,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    maxWidth: SCREEN_WIDTH - (isSmallScreen ? 32 : 48),
+    alignSelf: 'center',
+    width: '100%',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  iconContainer: {
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#6366f1',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fee2e2',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#ef4444',
+    marginBottom: 24,
+  },
+  errorText: {
+    color: '#b91c1c',
+    fontWeight: '600',
+    marginLeft: 8,
+    flex: 1,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: 12,
+    zIndex: 1,
+  },
+  input: {
+    flex: 1,
+    height: 48,
+    borderWidth: 2,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingLeft: 44,
+    paddingRight: 16,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  inputError: {
+    borderColor: '#ef4444',
+  },
+  fieldError: {
+    color: '#ef4444',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  submitButton: {
+    marginTop: 8,
+    marginBottom: 24,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  submitGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 56,
+    gap: 8,
+  },
+  submitText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  toggleText: {
+    color: '#6b7280',
+    fontSize: 14,
+  },
+  toggleButton: {
+    color: '#6366f1',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+});
 
 export default AuthForm;

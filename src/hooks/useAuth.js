@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Crypto from 'expo-crypto';
 
 // Simple password hashing using SHA-256
 const hashPassword = async (password) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+  const hash = await Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    password
+  );
+  return hash;
 };
 
-// Get all users from localStorage
-const getAllUsers = () => {
-  const usersData = localStorage.getItem('macroGenie_users');
+// Get all users from AsyncStorage
+const getAllUsers = async () => {
+  const usersData = await AsyncStorage.getItem('macroGenie_users');
   if (!usersData) return [];
   try {
     return JSON.parse(usersData);
@@ -22,9 +23,9 @@ const getAllUsers = () => {
   }
 };
 
-// Save users to localStorage
-const saveUsers = (users) => {
-  localStorage.setItem('macroGenie_users', JSON.stringify(users));
+// Save users to AsyncStorage
+const saveUsers = async (users) => {
+  await AsyncStorage.setItem('macroGenie_users', JSON.stringify(users));
 };
 
 // User authentication and management
@@ -34,20 +35,24 @@ export const useAuth = () => {
 
   useEffect(() => {
     // Check for existing user session
-    const savedUser = localStorage.getItem('macroGenie_currentUser');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('macroGenie_currentUser');
+    const loadUser = async () => {
+      const savedUser = await AsyncStorage.getItem('macroGenie_currentUser');
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (error) {
+          console.error('Error parsing saved user:', error);
+          await AsyncStorage.removeItem('macroGenie_currentUser');
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+    
+    loadUser();
   }, []);
 
   const signup = async (username, password) => {
-    const users = getAllUsers();
+    const users = await getAllUsers();
     
     // Check if username already exists
     const existingUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
@@ -69,7 +74,7 @@ export const useAuth = () => {
 
     // Save to users list
     users.push(newUser);
-    saveUsers(users);
+    await saveUsers(users);
 
     // Set as current user (without password hash)
     const userSession = {
@@ -80,13 +85,13 @@ export const useAuth = () => {
     };
     
     setUser(userSession);
-    localStorage.setItem('macroGenie_currentUser', JSON.stringify(userSession));
+    await AsyncStorage.setItem('macroGenie_currentUser', JSON.stringify(userSession));
     
     return { success: true, user: userSession };
   };
 
   const login = async (username, password) => {
-    const users = getAllUsers();
+    const users = await getAllUsers();
     
     // Find user by username (case-insensitive)
     const foundUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
@@ -104,7 +109,7 @@ export const useAuth = () => {
 
     // Update last login
     foundUser.lastLogin = new Date().toISOString();
-    saveUsers(users);
+    await saveUsers(users);
 
     // Set as current user (without password hash)
     const userSession = {
@@ -115,17 +120,17 @@ export const useAuth = () => {
     };
     
     setUser(userSession);
-    localStorage.setItem('macroGenie_currentUser', JSON.stringify(userSession));
+    await AsyncStorage.setItem('macroGenie_currentUser', JSON.stringify(userSession));
     
     return { success: true, user: userSession };
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
-    localStorage.removeItem('macroGenie_currentUser');
+    await AsyncStorage.removeItem('macroGenie_currentUser');
   };
 
-  const updateUser = (updates) => {
+  const updateUser = async (updates) => {
     if (!user) return;
     
     const updatedUser = {
@@ -135,7 +140,7 @@ export const useAuth = () => {
     };
     
     setUser(updatedUser);
-    localStorage.setItem('macroGenie_currentUser', JSON.stringify(updatedUser));
+    await AsyncStorage.setItem('macroGenie_currentUser', JSON.stringify(updatedUser));
   };
 
   return {
@@ -155,44 +160,48 @@ export const useUserProfile = (user) => {
     currentWeight: null,
     targetWeight: null,
     preferences: {
-      units: 'metric', // metric, imperial
+      units: 'metric',
       notifications: true,
       darkMode: false
     }
   });
 
   useEffect(() => {
-    if (user) {
-      const profileKey = `macroGenie_profile_${user.id}`;
-      const savedProfile = localStorage.getItem(profileKey);
-      if (savedProfile) {
-        try {
-          setProfile(JSON.parse(savedProfile));
-        } catch (error) {
-          console.error('Error parsing saved profile:', error);
-        }
-      } else {
-        // Reset to default if no profile for this user
-        setProfile({
-          currentWeight: null,
-          targetWeight: null,
-          preferences: {
-            units: 'metric',
-            notifications: true,
-            darkMode: false
+    const loadProfile = async () => {
+      if (user) {
+        const profileKey = `macroGenie_profile_${user.id}`;
+        const savedProfile = await AsyncStorage.getItem(profileKey);
+        if (savedProfile) {
+          try {
+            setProfile(JSON.parse(savedProfile));
+          } catch (error) {
+            console.error('Error parsing saved profile:', error);
           }
-        });
+        } else {
+          // Reset to default if no profile for this user
+          setProfile({
+            currentWeight: null,
+            targetWeight: null,
+            preferences: {
+              units: 'metric',
+              notifications: true,
+              darkMode: false
+            }
+          });
+        }
       }
-    }
+    };
+    
+    loadProfile();
   }, [user]);
 
-  const updateProfile = (updates) => {
+  const updateProfile = async (updates) => {
     if (!user) return;
     
     const updatedProfile = { ...profile, ...updates };
     setProfile(updatedProfile);
     const profileKey = `macroGenie_profile_${user.id}`;
-    localStorage.setItem(profileKey, JSON.stringify(updatedProfile));
+    await AsyncStorage.setItem(profileKey, JSON.stringify(updatedProfile));
   };
 
   return {
@@ -201,132 +210,4 @@ export const useUserProfile = (user) => {
   };
 };
 
-// Meal tracking and management
-export const useMealTracking = () => {
-  const [meals, setMeals] = useState({
-    breakfast: { completed: false, time: null, foods: [] },
-    lunch: { completed: false, time: null, foods: [] },
-    dinner: { completed: false, time: null, foods: [] },
-    snacks: { completed: false, time: null, foods: [] }
-  });
-
-  const [cheatMeal, setCheatMeal] = useState({
-    used: false,
-    date: null,
-    foods: []
-  });
-
-  useEffect(() => {
-    const savedMeals = localStorage.getItem('macroGenie_meals');
-    const savedCheatMeal = localStorage.getItem('macroGenie_cheatMeal');
-    
-    if (savedMeals) {
-      try {
-        setMeals(JSON.parse(savedMeals));
-      } catch (error) {
-        console.error('Error parsing saved meals:', error);
-      }
-    }
-    
-    if (savedCheatMeal) {
-      try {
-        setCheatMeal(JSON.parse(savedCheatMeal));
-      } catch (error) {
-        console.error('Error parsing saved cheat meal:', error);
-      }
-    }
-  }, []);
-
-  const addFoodToMeal = (mealType, food) => {
-    const updatedMeals = {
-      ...meals,
-      [mealType]: {
-        ...meals[mealType],
-        foods: [...meals[mealType].foods, food],
-        time: meals[mealType].time || new Date().toISOString()
-      }
-    };
-    setMeals(updatedMeals);
-    localStorage.setItem('macroGenie_meals', JSON.stringify(updatedMeals));
-  };
-
-  const completeMeal = (mealType) => {
-    const updatedMeals = {
-      ...meals,
-      [mealType]: {
-        ...meals[mealType],
-        completed: true,
-        time: meals[mealType].time || new Date().toISOString()
-      }
-    };
-    setMeals(updatedMeals);
-    localStorage.setItem('macroGenie_meals', JSON.stringify(updatedMeals));
-  };
-
-  const addCheatMeal = (foods) => {
-    const newCheatMeal = {
-      used: true,
-      date: new Date().toISOString(),
-      foods: foods
-    };
-    setCheatMeal(newCheatMeal);
-    localStorage.setItem('macroGenie_cheatMeal', JSON.stringify(newCheatMeal));
-  };
-
-  const addCustomMeal = (mealName, mealTime) => {
-    const customMealKey = mealName.toLowerCase().replace(/\s+/g, '_');
-    const updatedMeals = {
-      ...meals,
-      [customMealKey]: {
-        completed: false,
-        time: null,
-        foods: [],
-        customName: mealName,
-        customTime: mealTime
-      }
-    };
-    setMeals(updatedMeals);
-    localStorage.setItem('macroGenie_meals', JSON.stringify(updatedMeals));
-  };
-
-  const removeCustomMeal = (mealType) => {
-    const updatedMeals = { ...meals };
-    delete updatedMeals[mealType];
-    setMeals(updatedMeals);
-    localStorage.setItem('macroGenie_meals', JSON.stringify(updatedMeals));
-  };
-
-  const resetDailyMeals = () => {
-    const resetMeals = {
-      breakfast: { completed: false, time: null, foods: [] },
-      lunch: { completed: false, time: null, foods: [] },
-      dinner: { completed: false, time: null, foods: [] },
-      snacks: { completed: false, time: null, foods: [] }
-    };
-    setMeals(resetMeals);
-    localStorage.setItem('macroGenie_meals', JSON.stringify(resetMeals));
-  };
-
-  const getTotalMealsCompleted = () => {
-    return Object.values(meals).filter(meal => meal.completed).length;
-  };
-
-  const getAllMealsCompleted = () => {
-    return Object.values(meals).every(meal => meal.completed);
-  };
-
-  return {
-    meals,
-    cheatMeal,
-    addFoodToMeal,
-    completeMeal,
-    addCheatMeal,
-    addCustomMeal,
-    removeCustomMeal,
-    resetDailyMeals,
-    getTotalMealsCompleted,
-    getAllMealsCompleted
-  };
-};
-
-export default { useAuth, useUserProfile, useMealTracking };
+export default { useAuth, useUserProfile };

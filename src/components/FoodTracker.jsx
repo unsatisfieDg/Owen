@@ -1,360 +1,960 @@
-import React, { useState } from 'react';
-import { Plus, Search, X, TrendingUp, Clock, Star } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Modal,
+  Alert,
+  ActivityIndicator,
+  Dimensions,
+  Keyboard,
+  Platform,
+  KeyboardAvoidingView
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { searchFood } from '../utils/api';
-import { searchFoodDatabase, getRandomFoodSuggestions } from '../utils/foodDatabase';
-import FoodLogList from './FoodLogList';
+import { searchFoodDatabase } from '../utils/foodDatabase';
 
-const FoodTracker = ({ dailyLog, setDailyLog }) => {
+// Conditionally import BarCodeScanner (not available in Expo Go)
+let BarCodeScanner = null;
+try {
+  BarCodeScanner = require('expo-barcode-scanner').BarCodeScanner;
+} catch (e) {
+  console.log('BarCodeScanner not available in this environment');
+}
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus, onInputBlur }) => {
   const [foodSearch, setFoodSearch] = useState('');
-  const [foodAmount, setFoodAmount] = useState('');
+  const [foodAmount, setFoodAmount] = useState('100');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions] = useState(getRandomFoodSuggestions(6));
+  const [showResults, setShowResults] = useState(false);
+  const [selectedFood, setSelectedFood] = useState(null);
   const [liveResults, setLiveResults] = useState([]);
+  const searchInputRef = useRef(null);
+  const containerRef = useRef(null);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  
+  // Barcode scanner states
+  const [showScanner, setShowScanner] = useState(false);
+  const [hasPermission, setHasPermission] = useState(null);
+  const [scanned, setScanned] = useState(false);
+  const [isLoadingBarcode, setIsLoadingBarcode] = useState(false);
 
+  // Manage parent scroll based on input focus
+  useEffect(() => {
+    if (isInputFocused) {
+      onInputFocus?.();
+    } else {
+      onInputBlur?.();
+    }
+  }, [isInputFocused, onInputFocus, onInputBlur]);
+
+  // Request camera permission for barcode scanner
+  useEffect(() => {
+    const getBarCodeScannerPermissions = async () => {
+      if (BarCodeScanner) {
+        const { status } = await BarCodeScanner.requestPermissionsAsync();
+        setHasPermission(status === 'granted');
+      } else {
+        setHasPermission(false);
+      }
+    };
+    getBarCodeScannerPermissions();
+  }, []);
+
+  // Live search from local database as user types
+  const handleInputChange = (text) => {
+    setFoodSearch(text);
+    
+    // Ensure parent scroll stays locked while typing
+    if (!isInputFocused) {
+      setIsInputFocused(true);
+    }
+    
+    // Re-enabled live results (now with absolute positioning)
+    if (text.trim().length >= 2) {
+      const localResults = searchFoodDatabase(text);
+      setLiveResults(localResults.slice(0, 5));
+    } else {
+      setLiveResults([]);
+    }
+  };
+
+  // Search using API when user clicks search
   const handleSearch = async () => {
-    if (!foodSearch.trim()) return;
+    if (!foodSearch.trim()) {
+      Alert.alert('Enter Food', 'Please enter a food name to search.');
+      return;
+    }
     
     setIsSearching(true);
-    setShowSuggestions(false);
+    setShowResults(true);
     
     try {
-      // First try local database
+      // Try API first
+      const apiResults = await searchFood(foodSearch);
+      
+      // Also get local results
       const localResults = searchFoodDatabase(foodSearch);
-      if (localResults.length > 0) {
-        setSearchResults(localResults);
-      } else {
-        // Fallback to API
-        const apiResults = await searchFood(foodSearch);
-        setSearchResults(apiResults);
+      
+      // Combine results (API first, then local if API returns few results)
+      let combined = [...apiResults];
+      if (apiResults.length < 5) {
+        const additionalLocal = localResults
+          .filter(local => !apiResults.some(api => 
+            api.name.toLowerCase() === local.name.toLowerCase()
+          ))
+          .slice(0, 10 - apiResults.length);
+        combined = [...combined, ...additionalLocal];
+      }
+      
+      setSearchResults(combined);
+      
+      if (combined.length === 0) {
+        Alert.alert('No Results', 'No food found. Try a different name!');
       }
     } catch (error) {
-      console.error('Search error:', error);
-      setSearchResults([]);
+      console.error('Food search error:', error);
+      // Fallback to local database
+      const localResults = searchFoodDatabase(foodSearch);
+      setSearchResults(localResults);
+      
+      if (localResults.length === 0) {
+        Alert.alert('No Results', 'No food found. Try a different name!');
+      }
     } finally {
       setIsSearching(false);
     }
   };
 
-  const addFood = (food) => {
-    const grams = parseFloat(foodAmount) || 100;
-    const multiplier = grams / 100;
-    
-    const newFood = {
-      id: Date.now() + Math.random(),
-      name: `${food.name} (${grams}g)`,
-      calories: Math.round(food.calories * multiplier),
-      protein: Math.round(food.protein * multiplier),
-      carbs: Math.round(food.carbs * multiplier),
-      fats: Math.round(food.fats * multiplier),
+  const handleSelectFood = (food) => {
+    setSelectedFood(food);
+  };
+
+  const handleAddFood = () => {
+    if (!selectedFood || !foodAmount) {
+      Alert.alert('Missing Info', 'Please select a food and enter an amount.');
+      return;
+    }
+
+    const amount = parseFloat(foodAmount);
+    if (isNaN(amount) || amount <= 0) {
+      Alert.alert('Invalid Amount', 'Please enter a valid amount.');
+      return;
+    }
+
+    const multiplier = amount / 100;
+    const food = {
+      id: Date.now(),
+      name: selectedFood.name,
+      serving: amount,
+      calories: Math.round(selectedFood.calories * multiplier),
+      protein: Math.round(selectedFood.protein * multiplier),
+      carbs: Math.round(selectedFood.carbs * multiplier),
+      fats: Math.round(selectedFood.fats * multiplier),
       timestamp: new Date().toISOString()
     };
-    
-    setDailyLog(prev => ({
-      calories: prev.calories + newFood.calories,
-      protein: prev.protein + newFood.protein,
-      carbs: prev.carbs + newFood.carbs,
-      fats: prev.fats + newFood.fats,
-      foods: [...prev.foods, newFood]
-    }));
-    
-    setFoodSearch('');
-    setFoodAmount('');
-    setSearchResults([]);
-    setShowSuggestions(false);
-  };
-
-  const removeFood = (foodId) => {
-    const foodToRemove = dailyLog.foods.find(f => f.id === foodId);
-    if (!foodToRemove) return;
 
     setDailyLog(prev => ({
-      calories: prev.calories - foodToRemove.calories,
-      protein: prev.protein - foodToRemove.protein,
-      carbs: prev.carbs - foodToRemove.carbs,
-      fats: prev.fats - foodToRemove.fats,
-      foods: prev.foods.filter(f => f.id !== foodId)
+      calories: prev.calories + food.calories,
+      protein: prev.protein + food.protein,
+      carbs: prev.carbs + food.carbs,
+      fats: prev.fats + food.fats,
+      foods: [...prev.foods, food]
     }));
-  };
 
-  const handleSuggestionClick = (suggestion) => {
-    setFoodSearch(suggestion.name);
+    // Reset
+    setSelectedFood(null);
     setFoodAmount('100');
-    setShowSuggestions(false);
+    setFoodSearch('');
+    setSearchResults([]);
+    setLiveResults([]);
+    setShowResults(false);
+    
+    Alert.alert('Success!', `${food.name} added to your log! 🎉`);
   };
 
-  // Real-time search as user types
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setFoodSearch(value);
-    
-    if (value.trim().length >= 2) {
-      // Search local database in real-time
-      const results = searchFoodDatabase(value);
-      setLiveResults(results.slice(0, 5)); // Show top 5 results
-      setShowSuggestions(false);
-    } else {
-      setLiveResults([]);
-      setShowSuggestions(value.length === 0);
+  // Fetch product data from OpenFoodFacts API
+  const fetchBarcodeData = async (barcode) => {
+    try {
+      const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+      const data = await response.json();
+      
+      if (data.status === 1 && data.product) {
+        const product = data.product;
+        const nutriments = product.nutriments || {};
+        
+        // Try to get per serving data first, fallback to per 100g
+        const servingSize = product.serving_quantity || product.product_quantity || 100;
+        
+        // Extract nutrition per serving (or per 100g if serving not available)
+        const calories = Math.round(
+          nutriments['energy-kcal_serving'] || 
+          nutriments['energy-kcal_100g'] || 
+          nutriments['energy-kcal'] || 
+          0
+        );
+        const protein = Math.round(
+          nutriments.proteins_serving || 
+          nutriments.proteins_100g || 
+          nutriments.proteins || 
+          0
+        );
+        const carbs = Math.round(
+          nutriments.carbohydrates_serving || 
+          nutriments.carbohydrates_100g || 
+          nutriments.carbohydrates || 
+          0
+        );
+        const fats = Math.round(
+          nutriments.fat_serving || 
+          nutriments.fat_100g || 
+          nutriments.fat || 
+          0
+        );
+        
+        return {
+          name: product.product_name || 'Unknown Product',
+          serving: servingSize,
+          calories: calories,
+          protein: protein,
+          carbs: carbs,
+          fats: fats,
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Barcode fetch error:', error);
+      return null;
     }
   };
 
-  return (
-    <div className="bg-white dark:bg-[#1f1f1f] rounded-2xl p-6 transition-all duration-300 border border-gray-100 dark:border-white/8">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-          <div className="relative">
-            <Plus className="w-6 h-6 text-blue-500 animate-pulse" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
-          </div>
-          Food Tracker
-        </h3>
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-white/70">
-          <Clock className="w-4 h-4" />
-          <span>Today's Log</span>
-        </div>
-      </div>
+  // Handle barcode scan
+  const handleBarCodeScanned = async ({ type, data }) => {
+    setScanned(true);
+    setIsLoadingBarcode(true);
+    
+    try {
+      const productData = await fetchBarcodeData(data);
       
-      {/* Helpful Hint */}
-      <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 animate-fade-in-up">
-        <p className="text-sm text-blue-700 dark:text-blue-300 flex items-start gap-2">
-          <span className="text-blue-500 font-bold">💡</span>
-          <span>
-            <strong>Track what you eat!</strong> Search for foods you've consumed, set the amount in grams, and add them to compute your daily macros and achieve your nutrition goals.
-          </span>
-        </p>
-      </div>
-      
-      <div className="space-y-4">
-        {/* Search Input */}
-        <div className="relative">
-          {/* Mobile Layout (< 640px) - Stacked */}
-          <div className="sm:hidden space-y-3">
-            {/* Search Input - Full Width */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
-              <input
-                type="text"
-                placeholder="Search food..."
-                value={foodSearch}
-                onChange={handleInputChange}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                onFocus={() => setShowSuggestions(foodSearch.length === 0)}
-                className="w-full pl-11 pr-10 py-3.5 text-base border-2 border-gray-300 dark:border-white/8 rounded-xl bg-white dark:bg-[#1f1f1f] text-gray-900 dark:text-white transition-all duration-300 focus-ring focus:border-blue-500 hover:border-gray-400 dark:hover:border-gray-600"
-              />
-              {foodSearch && (
-                <button
-                  onClick={() => {
-                    setFoodSearch('');
-                    setSearchResults([]);
-                    setLiveResults([]);
-                    setShowSuggestions(false);
-                  }}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors z-10"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
-            </div>
-            
-            {/* Grams + Button Row */}
-            <div className="flex gap-3">
-              <input
-                type="number"
-                placeholder="Grams"
-                value={foodAmount}
-                onChange={(e) => setFoodAmount(e.target.value)}
-                className="flex-1 px-4 py-3.5 text-base border-2 border-gray-300 dark:border-white/8 rounded-xl bg-white dark:bg-[#1f1f1f] text-gray-900 dark:text-white transition-all duration-300 focus-ring focus:border-blue-500 hover:border-gray-400 dark:hover:border-gray-600"
-              />
-              
-              <button
-                onClick={handleSearch}
-                disabled={isSearching || !foodSearch.trim()}
-                className={`flex-1 px-4 py-3.5 rounded-xl font-medium text-white transition-all duration-300 focus-ring text-base ${
-                  isSearching || !foodSearch.trim()
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-lg hover:shadow-xl'
-                }`}
-              >
-                {isSearching ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Adding...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-2">
-                    <Plus className="w-5 h-5" />
-                    <span>Add Food</span>
-                  </div>
-                )}
-              </button>
-            </div>
-          </div>
-          
-          {/* Desktop Layout (≥ 640px) - Horizontal */}
-          <div className="hidden sm:flex gap-3">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search food..."
-                value={foodSearch}
-                onChange={handleInputChange}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                onFocus={() => setShowSuggestions(foodSearch.length === 0)}
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 dark:border-white/8 rounded-xl bg-white dark:bg-[#1f1f1f] text-gray-900 dark:text-white transition-all duration-300 focus-ring focus:border-blue-500 hover:border-gray-400 dark:hover:border-gray-600"
-              />
-              {foodSearch && (
-                <button
-                  onClick={() => {
-                    setFoodSearch('');
-                    setSearchResults([]);
-                    setLiveResults([]);
-                    setShowSuggestions(false);
-                  }}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-            
-            <div className="relative">
-              <input
-                type="number"
-                placeholder="Grams"
-                value={foodAmount}
-                onChange={(e) => setFoodAmount(e.target.value)}
-                className="w-24 px-3 py-3 border-2 border-gray-300 dark:border-white/8 rounded-xl bg-white dark:bg-[#1f1f1f] text-gray-900 dark:text-white transition-all duration-300 focus-ring focus:border-blue-500 hover:border-gray-400 dark:hover:border-gray-600"
-              />
-            </div>
-            
-            <button
-              onClick={handleSearch}
-              disabled={isSearching || !foodSearch.trim()}
-              className={`px-6 py-3 rounded-xl font-medium text-white transition-all duration-300 focus-ring hover-scale ${
-                isSearching || !foodSearch.trim()
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-lg hover:shadow-xl'
-              }`}
-            >
-              {isSearching ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Adding...</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Plus className="w-4 h-4" />
-                  <span>Add Food</span>
-                </div>
-              )}
-            </button>
-          </div>
-          
-          {/* Live Search Results (as you type) */}
-          {liveResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1f1f1f] rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 z-10 animate-fade-in-scale">
-              <div className="p-3 border-b border-gray-200 dark:border-white/10">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-                  <Search className="w-4 h-4 text-blue-500" />
-                  <span>Found {liveResults.length} results</span>
-                </div>
-              </div>
-              <div className="max-h-60 overflow-y-auto">
-                {liveResults.map((food, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setFoodSearch(food.name);
-                      setFoodAmount('100');
-                      setLiveResults([]);
-                    }}
-                    className="w-full p-3 text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-b border-gray-100 dark:border-white/10 last:border-b-0"
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{food.name}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {food.calories}cal | P: {food.protein}g | C: {food.carbs}g | F: {food.fats}g
-                        </p>
-                      </div>
-                      <TrendingUp className="w-4 h-4 text-blue-500" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Quick Suggestions */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1f1f1f] rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 z-10 animate-fade-in-scale">
-              <div className="p-3 border-b border-gray-200 dark:border-white/10">
-                <div className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  <span>Popular Foods</span>
-                </div>
-              </div>
-              <div className="max-h-48 overflow-y-auto">
-                {suggestions.map((suggestion, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className="w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-white/10 last:border-b-0"
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">{suggestion.name}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {suggestion.calories}cal | P: {suggestion.protein}g | C: {suggestion.carbs}g | F: {suggestion.fats}g
-                        </p>
-                      </div>
-                      <TrendingUp className="w-4 h-4 text-green-500" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+      if (productData) {
+        // Automatically add food to daily log
+        const food = {
+          id: Date.now(),
+          name: productData.name,
+          serving: productData.serving,
+          calories: productData.calories,
+          protein: productData.protein,
+          carbs: productData.carbs,
+          fats: productData.fats,
+          timestamp: new Date().toISOString()
+        };
+
+        setDailyLog(prev => ({
+          calories: prev.calories + food.calories,
+          protein: prev.protein + food.protein,
+          carbs: prev.carbs + food.carbs,
+          fats: prev.fats + food.fats,
+          foods: [...prev.foods, food]
+        }));
+
+        setShowScanner(false);
         
-        {/* Search Results */}
-        {searchResults.length > 0 && (
-          <div className="space-y-2 max-h-60 overflow-y-auto animate-fade-in-up">
-            <div className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-              <TrendingUp className="w-4 h-4 text-blue-500" />
-              <span>Search Results ({searchResults.length})</span>
-            </div>
-            {searchResults.map((food, idx) => (
-              <div
-                key={idx}
-                onClick={() => addFood(food)}
-                className="group p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl cursor-pointer hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/20 dark:hover:to-purple-900/20 transition-all duration-300 hover-scale border border-gray-200 dark:border-white/10"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                      {food.name}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {Math.round(food.calories)}cal | P: {Math.round(food.protein)}g | C: {Math.round(food.carbs)}g | F: {Math.round(food.fats)}g
-                    </p>
-                  </div>
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Plus className="w-5 h-5 text-blue-500" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        // Show success alert with nutrition info (only calories, carbs, protein)
+        Alert.alert(
+          '✅ Added to Log!',
+          `${productData.name}\n\n` +
+          `Serving: ${productData.serving}g\n` +
+          `Calories: ${productData.calories}\n` +
+          `Protein: ${productData.protein}g\n` +
+          `Carbs: ${productData.carbs}g`,
+          [{ text: 'Great! 🎉' }]
+        );
+      } else {
+        setShowScanner(false);
+        Alert.alert('Not Found', 'Product not found in database. Try searching manually.');
+      }
+    } catch (error) {
+      setShowScanner(false);
+      Alert.alert('Error', 'Failed to fetch product data. Please try again.');
+    } finally {
+      setIsLoadingBarcode(false);
+      setScanned(false);
+    }
+  };
+
+  const handleOpenScanner = () => {
+    if (hasPermission === null) {
+      Alert.alert('Permission Required', 'Requesting camera permission...');
+      return;
+    }
+    if (hasPermission === false) {
+      Alert.alert('No Camera Access', 'Please enable camera permissions in your device settings to scan barcodes.');
+      return;
+    }
+    setShowScanner(true);
+    setScanned(false);
+  };
+
+  const handleRemoveFood = (foodId) => {
+    const food = dailyLog.foods.find(f => f.id === foodId);
+    if (!food) return;
+
+    Alert.alert(
+      'Remove Food',
+      `Remove ${food.name}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            setDailyLog(prev => ({
+              calories: prev.calories - food.calories,
+              protein: prev.protein - food.protein,
+              carbs: prev.carbs - food.carbs,
+              fats: prev.fats - food.fats,
+              foods: prev.foods.filter(f => f.id !== foodId)
+            }));
+          }
+        }
+      ]
+    );
+  };
+
+
+  return (
+    <View 
+      ref={containerRef}
+      style={[styles.container, darkMode && styles.containerDark]}
+      onLayout={() => {}}
+      collapsable={false}
+      removeClippedSubviews={false}
+      onStartShouldSetResponder={() => true}
+      onMoveShouldSetResponder={() => false}
+    >
+      <View style={styles.header}>
+        <Icon name="food-apple" size={24} color="#10b981" />
+        <Text style={[styles.title, darkMode && styles.titleDark]}>Food Tracker</Text>
+      </View>
+
+      {/* Search Area - wrapped for absolute positioning */}
+      <View style={styles.searchArea}>
+        {/* Search Bar */}
+        <View style={styles.searchContainer} collapsable={false} onStartShouldSetResponder={() => true}>
+        <View style={styles.searchInputContainer}>
+          <Icon name="magnify" size={20} color="#9ca3af" />
+          <TextInput
+            ref={searchInputRef}
+            style={styles.searchInput}
+            placeholder="Search food (e.g., chicken, banana)..."
+            value={foodSearch}
+            onChangeText={handleInputChange}
+            onFocus={() => {
+              setIsInputFocused(true);
+              // Prevent scroll on focus
+              searchInputRef.current?.setNativeProps({ caretHidden: false });
+            }}
+            onBlur={() => {
+              setIsInputFocused(false);
+              setTimeout(() => setLiveResults([]), 200);
+            }}
+            onSubmitEditing={() => {
+              Keyboard.dismiss();
+              handleSearch();
+            }}
+            returnKeyType="search"
+            autoCapitalize="none"
+            autoCorrect={false}
+            scrollEnabled={false}
+            textContentType="none"
+          />
+          {foodSearch.length > 0 && (
+            <TouchableOpacity onPress={() => {
+              setFoodSearch('');
+              setLiveResults([]);
+              setSearchResults([]);
+            }}>
+              <Icon name="close-circle" size={20} color="#9ca3af" />
+            </TouchableOpacity>
+          )}
+        </View>
+        <TouchableOpacity 
+          style={styles.searchButton} 
+          onPress={() => {
+            Keyboard.dismiss();
+            handleSearch();
+          }}
+          disabled={isSearching}
+        >
+          <LinearGradient
+            colors={isSearching ? ['#d1d5db', '#9ca3af'] : ['#10b981', '#059669']}
+            style={styles.searchButtonGradient}
+          >
+            {isSearching ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Icon name="plus" size={24} color="#fff" />
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+        
+        {/* Barcode Scanner Button - Only show if available */}
+        {BarCodeScanner && (
+          <TouchableOpacity 
+            style={styles.barcodeButton} 
+            onPress={handleOpenScanner}
+          >
+            <LinearGradient
+              colors={['#6366f1', '#4f46e5']}
+              style={styles.searchButtonGradient}
+            >
+              <Icon name="barcode-scan" size={24} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
         )}
-      </div>
-      
-      <FoodLogList foods={dailyLog.foods} onRemove={removeFood} />
-    </div>
+      </View>
+
+        {/* Live Search Results */}
+        {liveResults.length > 0 && !showResults && (
+          <View style={styles.liveResults}>
+            {liveResults.map((food, idx) => (
+              <TouchableOpacity
+                key={idx}
+                style={styles.liveResultItem}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setSelectedFood(food);
+                  setFoodSearch(food.name);
+                  setLiveResults([]);
+                }}
+              >
+                <Icon name="food" size={16} color="#6b7280" />
+                <Text style={styles.liveResultText}>{food.name}</Text>
+                <Text style={styles.liveResultMacro}>{food.calories} cal</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+
+      {/* Search Results Modal */}
+      <Modal visible={showResults} animationType="slide" transparent={true}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Search Results</Text>
+              <TouchableOpacity onPress={() => setShowResults(false)}>
+                <Icon name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+
+            {isSearching ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#10b981" />
+                <Text style={styles.loadingText}>Searching foods...</Text>
+              </View>
+            ) : (
+              <>
+                <ScrollView 
+                  style={styles.resultsScroll}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {searchResults.map((food, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={[
+                        styles.resultItem,
+                        selectedFood?.name === food.name && styles.resultItemSelected
+                      ]}
+                      onPress={() => handleSelectFood(food)}
+                    >
+                      <View style={styles.resultInfo}>
+                        <Text style={styles.foodName}>{food.name}</Text>
+                        <Text style={styles.foodMacros}>
+                          {food.calories}cal • P:{food.protein}g • C:{food.carbs}g • F:{food.fats}g
+                        </Text>
+                      </View>
+                      {selectedFood?.name === food.name && (
+                        <Icon name="check-circle" size={24} color="#10b981" />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
+                {selectedFood && (
+                  <View style={styles.addSection}>
+                    <View style={styles.amountContainer}>
+                      <Text style={styles.amountLabel}>Amount (g):</Text>
+                      <TextInput
+                        style={styles.servingInput}
+                        placeholder="100"
+                        placeholderTextColor="#9ca3af"
+                        keyboardType="numeric"
+                        value={foodAmount}
+                        onChangeText={setFoodAmount}
+                      />
+                    </View>
+                    <TouchableOpacity style={styles.addButton} onPress={handleAddFood}>
+                      <LinearGradient
+                        colors={['#10b981', '#059669']}
+                        style={styles.addButtonGradient}
+                      >
+                        <Icon name="plus" size={20} color="#fff" />
+                        <Text style={styles.addButtonText}>Add Food</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </>
+            )}
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Food Log */}
+      <View style={styles.foodLogHeader}>
+        <Text style={styles.foodLogTitle}>Today's Log</Text>
+        <Text style={styles.foodLogCount}>{dailyLog.foods.length} items</Text>
+      </View>
+
+      <ScrollView style={styles.foodLog}>
+        {dailyLog.foods.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Icon name="food-off" size={48} color="#d1d5db" />
+            <Text style={styles.emptyText}>No foods logged yet</Text>
+            <Text style={styles.emptySubtext}>Search and add food above to start tracking</Text>
+          </View>
+        ) : (
+          dailyLog.foods.map((food) => (
+            <View key={food.id} style={styles.foodItem}>
+              <View style={styles.foodInfo}>
+                <Text style={styles.foodItemName}>{food.name}</Text>
+                <Text style={styles.foodItemDetails}>
+                  {food.serving}g • {food.calories}cal • P:{food.protein}g • C:{food.carbs}g
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => handleRemoveFood(food.id)}
+              >
+                <Icon name="close-circle" size={24} color="#ef4444" />
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
+      </ScrollView>
+
+      {/* Barcode Scanner Modal */}
+      <Modal
+        visible={showScanner}
+        animationType="slide"
+        onRequestClose={() => setShowScanner(false)}
+      >
+        <View style={styles.scannerContainer}>
+          {hasPermission && BarCodeScanner && (
+            <BarCodeScanner
+              onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+              style={StyleSheet.absoluteFillObject}
+            />
+          )}
+          
+          {isLoadingBarcode && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#fff" />
+              <Text style={styles.loadingText}>Fetching product data...</Text>
+            </View>
+          )}
+
+          <View style={styles.scannerOverlay}>
+            <Text style={styles.scannerTitle}>Scan Food Barcode</Text>
+            <Text style={styles.scannerSubtitle}>Position barcode within the frame</Text>
+            
+            <View style={styles.scannerFrame}>
+              <View style={[styles.corner, styles.cornerTopLeft]} />
+              <View style={[styles.corner, styles.cornerTopRight]} />
+              <View style={[styles.corner, styles.cornerBottomLeft]} />
+              <View style={[styles.corner, styles.cornerBottomRight]} />
+            </View>
+
+            <TouchableOpacity
+              style={styles.closeScannerButton}
+              onPress={() => setShowScanner(false)}
+            >
+              <Icon name="close-circle" size={48} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  containerDark: {
+    backgroundColor: '#1a1a1a',
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  titleDark: {
+    color: '#fff',
+  },
+  searchArea: {
+    position: 'relative',
+    marginBottom: 12,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 48,
+    fontSize: 14,
+    color: '#1f2937',
+  },
+  searchButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  searchButtonGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  liveResults: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    maxHeight: 200,
+    zIndex: 1000,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  liveResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  liveResultText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#1f2937',
+  },
+  liveResultMacro: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '85%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  resultsScroll: {
+    maxHeight: 300,
+  },
+  resultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#f9fafb',
+    marginBottom: 8,
+  },
+  resultItemSelected: {
+    backgroundColor: '#d1fae5',
+    borderWidth: 2,
+    borderColor: '#10b981',
+  },
+  resultInfo: {
+    flex: 1,
+  },
+  foodName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  foodMacros: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  addSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  addSectionFixed: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    backgroundColor: '#fff',
+  },
+  amountContainer: {
+    marginBottom: 12,
+  },
+  amountLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 6,
+  },
+  servingInput: {
+    height: 48,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#111827',
+    fontWeight: '600',
+  },
+  addButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  addButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 14,
+    gap: 8,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  foodLogHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  foodLogTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  foodLogCount: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  foodLog: {
+    maxHeight: 300,
+  },
+  emptyState: {
+    alignItems: 'center',
+    padding: 32,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#9ca3af',
+    marginTop: 12,
+  },
+  emptySubtext: {
+    fontSize: 13,
+    color: '#d1d5db',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  foodItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  foodInfo: {
+    flex: 1,
+  },
+  foodItemName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  foodItemDetails: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  removeButton: {
+    padding: 4,
+  },
+  // Barcode Scanner Styles
+  barcodeButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginLeft: 8,
+  },
+  scannerContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  scannerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  scannerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  scannerSubtitle: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  scannerFrame: {
+    width: 250,
+    height: 250,
+    position: 'relative',
+  },
+  corner: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderColor: '#10b981',
+    borderWidth: 4,
+  },
+  cornerTopLeft: {
+    top: 0,
+    left: 0,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+  },
+  cornerTopRight: {
+    top: 0,
+    right: 0,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+  },
+  cornerBottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+  },
+  cornerBottomRight: {
+    bottom: 0,
+    right: 0,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+  },
+  closeScannerButton: {
+    padding: 16,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  loadingText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 16,
+  },
+});
 
 export default FoodTracker;

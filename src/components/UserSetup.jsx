@@ -1,237 +1,354 @@
-import React, { useState } from 'react';
-import { User, ArrowRight, CheckCircle, Sparkles } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Picker } from '@react-native-picker/picker';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
-const UserSetup = ({ userData, setUserData, onComplete }) => {
-  const [currentField, setCurrentField] = useState('');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const isSmallScreen = SCREEN_WIDTH < 375;
+
+const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
   const [isValid, setIsValid] = useState(false);
 
   const validateForm = () => {
-    const basicValid = userData.name && userData.age && userData.height && userData.weight && 
-                       userData.gender && userData.activityLevel && userData.goal;
-    
-    // If goal is not maintenance, target weight is required
+    const basicValid =
+      userData.name && userData.age && userData.height && userData.weight &&
+      userData.gender && userData.activityLevel && userData.goal;
+
     const needsTargetWeight = userData.goal !== 'maintain' && userData.goal !== '';
-    const targetWeightValid = needsTargetWeight ? userData.targetWeight : true;
-    
+    const targetWeightValid = needsTargetWeight ? (userData.targetWeight && userData.targetWeight.trim() !== '') : true;
+
     const valid = basicValid && targetWeightValid;
     setIsValid(valid);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     validateForm();
   }, [userData]);
 
   const handleInputChange = (field, value) => {
-    setUserData({...userData, [field]: value});
-    setCurrentField(field);
+    setUserData({ ...userData, [field]: value });
   };
 
   const handleComplete = () => {
     if (isValid) {
       onComplete();
+      // Navigation will happen automatically via App.js
     }
   };
 
   return (
-    <div className="bg-white/90 dark:bg-[#1f1f1f]/90 backdrop-blur-lg rounded-2xl shadow-2xl p-8 max-w-2xl mx-auto border border-white/20 dark:border-white/8/50 animate-fade-in-scale">
-      <div className="text-center mb-8">
-        <div className="relative inline-block mb-4">
-          <User className="w-12 h-12 text-blue-500 mx-auto animate-bounce" />
-          <div className="absolute -top-2 -right-2">
-            <Sparkles className="w-6 h-6 text-yellow-400 animate-pulse" />
-          </div>
-        </div>
-        <h2 className="text-3xl font-bold mb-2 gradient-text animate-fade-in-up">
-          Let's Get Started
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          Tell us about yourself to calculate your perfect nutrition plan
-        </p>
-      </div>
-      
-      <div className="space-y-6">
-        {/* Name Input */}
-        <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Full Name
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={userData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              onFocus={() => setCurrentField('name')}
-              className={`w-full p-4 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-                currentField === 'name' ? 'border-blue-500 shadow-lg' : 'border-gray-300 dark:border-white/10'
-              }`}
-            />
-            {userData.name && (
-              <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-green-500 animate-fade-in-scale" />
-            )}
-          </div>
-        </div>
-        
-        {/* Age and Gender */}
-        <div className="grid grid-cols-2 gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Age
-            </label>
-            <input
-              type="number"
-              placeholder=""
-              value={userData.age}
-              onChange={(e) => handleInputChange('age', e.target.value)}
-              onFocus={() => setCurrentField('age')}
-              className={`w-full p-4 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-                currentField === 'age' ? 'border-blue-500 shadow-lg' : 'border-gray-300 dark:border-white/10'
-              }`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Gender
-            </label>
-          <select
-            value={userData.gender}
-            onChange={(e) => handleInputChange('gender', e.target.value)}
-            onFocus={() => setCurrentField('gender')}
-            className={`w-full p-4 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-              currentField === 'gender' ? 'border-blue-500 shadow-lg' : 'border-gray-300 dark:border-white/10'
-            }`}
-          >
-            <option value="" disabled>Select your gender</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
-          </div>
-        </div>
-        
-        {/* Height and Weight */}
-        <div className="grid grid-cols-2 gap-4 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Height (cm)
-            </label>
-            <input
-              type="number"
-              placeholder=""
-              value={userData.height}
-              onChange={(e) => handleInputChange('height', e.target.value)}
-              onFocus={() => setCurrentField('height')}
-              className={`w-full p-4 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-                currentField === 'height' ? 'border-blue-500 shadow-lg' : 'border-gray-300 dark:border-white/10'
-              }`}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Weight (kg)
-            </label>
-            <input
-              type="number"
-              placeholder=""
-              value={userData.weight}
-              onChange={(e) => handleInputChange('weight', e.target.value)}
-              onFocus={() => setCurrentField('weight')}
-              className={`w-full p-4 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-                currentField === 'weight' ? 'border-blue-500 shadow-lg' : 'border-gray-300 dark:border-white/10'
-              }`}
-            />
-          </div>
-        </div>
-        
-        {/* Activity Level */}
-        <div className="animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Activity Level
-          </label>
-          <select
-            value={userData.activityLevel}
-            onChange={(e) => handleInputChange('activityLevel', e.target.value)}
-            onFocus={() => setCurrentField('activityLevel')}
-            className={`w-full p-4 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-              currentField === 'activityLevel' ? 'border-blue-500 shadow-lg' : 'border-gray-300 dark:border-white/10'
-            }`}
-          >
-            <option value="" disabled>Select your activity level</option>
-            <option value="1.2">Sedentary (little/no exercise)</option>
-            <option value="1.375">Light (1-3 days/week)</option>
-            <option value="1.55">Moderate (3-5 days/week)</option>
-            <option value="1.725">Active (6-7 days/week)</option>
-            <option value="1.9">Very Active (athlete)</option>
-          </select>
-        </div>
-        
-        {/* Goal */}
-        <div className="animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Goal
-          </label>
-          <select
-            value={userData.goal}
-            onChange={(e) => handleInputChange('goal', e.target.value)}
-            onFocus={() => setCurrentField('goal')}
-            className={`w-full p-4 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-              currentField === 'goal' ? 'border-blue-500 shadow-lg' : 'border-gray-300 dark:border-white/10'
-            }`}
-          >
-            <option value="" disabled>Select your goal</option>
-            <option value="maintain">Maintenance (Current Weight)</option>
-            <option value="muscle">Bulking (Muscle Gain)</option>
-            <option value="loss">Cutting (Fat Loss)</option>
-            <option value="recomp">Recomp (Lose Fat + Gain Muscle)</option>
-            <option value="slowloss">Losing Weight (Slow Fat Loss)</option>
-          </select>
-        </div>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+        <View style={styles.card}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.iconContainer}>
+              <Icon name="account-settings" size={48} color="#6366f1" />
+            </View>
+            <Text style={styles.title}>Let's Get Started</Text>
+            <Text style={styles.subtitle}>
+              Tell us about yourself to calculate your perfect nutrition plan
+            </Text>
+          </View>
 
-        {/* Target Weight (conditional - only for non-maintenance goals) */}
-        {userData.goal && userData.goal !== 'maintain' && (
-          <div className="animate-fade-in-up" style={{ animationDelay: '0.75s' }}>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Target Weight (kg) 🎯
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              placeholder=""
-              value={userData.targetWeight}
-              onChange={(e) => handleInputChange('targetWeight', e.target.value)}
-              onFocus={() => setCurrentField('targetWeight')}
-              className={`w-full p-4 border-2 rounded-xl bg-white dark:bg-[#262626] text-gray-900 dark:text-white transition-all duration-300 focus-ring ${
-                currentField === 'targetWeight' ? 'border-blue-500 shadow-lg' : 'border-gray-300 dark:border-white/10'
-              }`}
+          {/* Name Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Full Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your name"
+              placeholderTextColor="#9ca3af"
+              value={userData.name || ''}
+              onChangeText={(value) => handleInputChange('name', value)}
             />
-            <p className="text-xs text-green-600 dark:text-green-400 mt-2">
-              💡 This is your goal weight for {userData.goal === 'muscle' ? 'bulking' : userData.goal === 'loss' ? 'cutting' : userData.goal === 'slowloss' ? 'losing weight' : 'recomp'}
-            </p>
-          </div>
-        )}
-        
-        {/* Submit Button */}
-        <div className="animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
-          <button
-            onClick={handleComplete}
+            {userData.name ? (
+              <Icon name="check-circle" size={20} color="#10b981" style={styles.checkIcon} />
+            ) : null}
+          </View>
+
+          {/* Age and Gender Row */}
+          <View style={styles.row}>
+            <View style={[styles.inputContainer, styles.halfWidth]}>
+              <Text style={styles.label}>Age</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Age"
+                placeholderTextColor="#9ca3af"
+                value={userData.age || ''}
+                onChangeText={(value) => handleInputChange('age', value)}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={[styles.inputContainer, styles.halfWidth]}>
+              <Text style={styles.label}>Gender</Text>
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={userData.gender}
+                  onValueChange={(value) => handleInputChange('gender', value)}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
+                >
+                  <Picker.Item label="Select..." value="" color="#9ca3af" />
+                  <Picker.Item label="Male" value="male" />
+                  <Picker.Item label="Female" value="female" />
+                </Picker>
+              </View>
+            </View>
+          </View>
+
+          {/* Height and Weight Row */}
+          <View style={styles.row}>
+            <View style={[styles.inputContainer, styles.halfWidth]}>
+              <Text style={styles.label}>Height (cm)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Height"
+                placeholderTextColor="#9ca3af"
+                value={userData.height || ''}
+                onChangeText={(value) => handleInputChange('height', value)}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={[styles.inputContainer, styles.halfWidth]}>
+              <Text style={styles.label}>Weight (kg)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Weight"
+                placeholderTextColor="#9ca3af"
+                value={userData.weight || ''}
+                onChangeText={(value) => handleInputChange('weight', value)}
+                keyboardType="decimal-pad"
+              />
+            </View>
+          </View>
+
+          {/* Activity Level */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Activity Level</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={userData.activityLevel}
+                onValueChange={(value) => handleInputChange('activityLevel', value)}
+                style={styles.picker}
+                itemStyle={styles.pickerItem}
+              >
+                <Picker.Item label="Select activity level" value="" color="#9ca3af" />
+                <Picker.Item label="Sedentary (little/no exercise)" value="1.2" />
+                <Picker.Item label="Light (1-3 days/week)" value="1.375" />
+                <Picker.Item label="Moderate (3-5 days/week)" value="1.55" />
+                <Picker.Item label="Active (6-7 days/week)" value="1.725" />
+                <Picker.Item label="Very Active (athlete)" value="1.9" />
+              </Picker>
+            </View>
+          </View>
+
+          {/* Goal */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Goal</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={userData.goal}
+                onValueChange={(value) => handleInputChange('goal', value)}
+                style={styles.picker}
+                itemStyle={styles.pickerItem}
+              >
+                <Picker.Item label="Select your goal" value="" color="#9ca3af" />
+                <Picker.Item label="Maintenance (Current Weight)" value="maintain" />
+                <Picker.Item label="Bulking (Muscle Gain)" value="muscle" />
+                <Picker.Item label="Cutting (Fat Loss)" value="loss" />
+                <Picker.Item label="Recomp (Lose Fat + Gain Muscle)" value="recomp" />
+                <Picker.Item label="Slow Fat Loss" value="slowloss" />
+              </Picker>
+            </View>
+          </View>
+
+          {/* Target Weight (conditional) */}
+          {userData.goal && userData.goal !== 'maintain' && (
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Target Weight (kg) 🎯</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter target weight"
+                placeholderTextColor="#9ca3af"
+                value={userData.targetWeight || ''}
+                onChangeText={(value) => handleInputChange('targetWeight', value)}
+                keyboardType="decimal-pad"
+              />
+              <Text style={styles.hint}>
+                💡 This is your goal weight for{' '}
+                {userData.goal === 'muscle'
+                  ? 'bulking'
+                  : userData.goal === 'loss'
+                  ? 'cutting'
+                  : userData.goal === 'slowloss'
+                  ? 'losing weight'
+                  : 'recomp'}
+              </Text>
+            </View>
+          )}
+
+          {/* Submit Button */}
+          <TouchableOpacity
+            style={[styles.submitButton, !isValid && styles.submitButtonDisabled]}
+            onPress={handleComplete}
             disabled={!isValid}
-            className={`w-full group relative overflow-hidden py-4 px-6 rounded-xl font-bold text-white transition-all duration-300 focus-ring ${
-              isValid 
-                ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 hover-scale shadow-lg hover:shadow-xl' 
-                : 'bg-gray-400 cursor-not-allowed'
-            }`}
           >
-            <div className="flex items-center justify-center gap-2">
-              <span>Calculate My Goals</span>
-              <ArrowRight className={`w-5 h-5 transition-transform duration-300 ${isValid ? 'group-hover:translate-x-1' : ''}`} />
-            </div>
-            {isValid && (
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
+            <LinearGradient
+              colors={isValid ? ['#6366f1', '#a855f7'] : ['#9ca3af', '#9ca3af']}
+              style={styles.submitGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <Text style={styles.submitText}>Calculate My Goals</Text>
+              <Icon name="arrow-right" size={20} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: isSmallScreen ? 16 : 24,
+    paddingTop: isSmallScreen ? 12 : 24,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: isSmallScreen ? 16 : 20,
+    padding: isSmallScreen ? 20 : 32,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    maxWidth: SCREEN_WIDTH - (isSmallScreen ? 32 : 48),
+    alignSelf: 'center',
+    width: '100%',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  iconContainer: {
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#6366f1',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 8,
+  },
+  input: {
+    height: 48,
+    borderWidth: 2,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  checkIcon: {
+    position: 'absolute',
+    right: 12,
+    top: 42,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  halfWidth: {
+    flex: 1,
+  },
+  pickerWrapper: {
+    borderWidth: 2,
+    borderColor: '#d1d5db',
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+  },
+  picker: {
+    height: 48,
+    color: '#111827',
+  },
+  pickerItem: {
+    fontSize: 16,
+    height: 48,
+    color: '#111827',
+  },
+  hint: {
+    fontSize: 12,
+    color: '#10b981',
+    marginTop: 4,
+  },
+  submitButton: {
+    marginTop: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  submitButtonDisabled: {
+    opacity: 0.6,
+  },
+  submitGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 56,
+    gap: 8,
+  },
+  submitText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
 
 export default UserSetup;

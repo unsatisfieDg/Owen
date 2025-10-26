@@ -1,94 +1,119 @@
 import React from 'react';
-import { Heart, Github } from 'lucide-react';
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
-const Footer = () => {
+const Footer = ({ darkMode }) => {
   const currentYear = new Date().getFullYear();
 
+  const openGitHub = () => {
+    Linking.openURL('https://github.com/unsatisfieDg');
+  };
+
   return (
-    <footer className="mt-12 bg-white dark:bg-[#1a1a1a] rounded-2xl p-8 border border-gray-100 dark:border-white/5 transition-all duration-300">
-      <div className="max-w-6xl mx-auto">
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
-          {/* Brand Section */}
-          <div className="space-y-3">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg">
-                <Heart className="w-5 h-5 text-white" />
-              </div>
-              MacroGenie
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Your smart nutrition assistant for achieving your health and fitness goals.
-            </p>
-          </div>
+    <View style={[styles.container, darkMode && styles.containerDark]}>
+      {/* Brand Section */}
+      <View style={styles.brandSection}>
+        <View style={styles.brandHeader}>
+          <View style={styles.iconContainer}>
+            <Icon name="heart" size={20} color="#fff" />
+          </View>
+          <Text style={[styles.brandTitle, darkMode && styles.textDark]}>MacroGenius</Text>
+        </View>
+        <Text style={[styles.brandDescription, darkMode && styles.textSecondaryDark]}>
+          Track your nutrition to achieve your health and fitness goals.
+        </Text>
+      </View>
 
-          {/* Quick Links */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-gray-900 dark:text-white">Quick Links</h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li>
-                <a href="#dashboard" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  Dashboard
-                </a>
-              </li>
-              <li>
-                <a href="#tracker" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  Food Tracker
-                </a>
-              </li>
-              <li>
-                <a href="#recipes" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  Recipe Finder
-                </a>
-              </li>
-              <li>
-                <a href="#assistant" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  Smart Assistant
-                </a>
-              </li>
-            </ul>
-          </div>
+      {/* Connect Section */}
+      <TouchableOpacity style={[styles.githubButton, darkMode && styles.githubButtonDark]} onPress={openGitHub}>
+        <Icon name="github" size={24} color="#6366f1" />
+      </TouchableOpacity>
 
-          {/* Connect Section */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-gray-900 dark:text-white">Connect</h4>
-            <div className="flex gap-3">
-              <a
-                href="https://github.com/unsatisfieDg"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2.5 bg-gray-100 dark:bg-[#262626] hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-all duration-200 hover-lift group flex items-center justify-center"
-                aria-label="GitHub - @unsatisfieDg"
-              >
-                <Github className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="border-t border-gray-200 dark:border-white/8 my-6"></div>
-
-        {/* Bottom Footer */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-          <p>
-            © {currentYear} MacroGenie. Made with{' '}
-            <Heart className="w-4 h-4 inline text-red-500 animate-pulse" /> for your health.
-          </p>
-          <div className="flex gap-4">
-            <a href="#privacy" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              Privacy Policy
-            </a>
-            <span>•</span>
-            <a href="#terms" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-              Terms of Service
-            </a>
-          </div>
-        </div>
-      </div>
-    </footer>
+      {/* Copyright */}
+      <View style={[styles.copyright, darkMode && styles.copyrightDark]}>
+        <Text style={[styles.copyrightText, darkMode && styles.textSecondaryDark]}>
+          © {currentYear} MacroGenius. Made with{' '}
+        </Text>
+        <Icon name="heart" size={14} color="#ef4444" />
+        <Text style={[styles.copyrightText, darkMode && styles.textSecondaryDark]}> for your health.</Text>
+      </View>
+    </View>
   );
 };
 
-export default Footer;
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    marginTop: 48,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  containerDark: {
+    backgroundColor: '#1a1a1a',
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  brandSection: {
+    marginBottom: 24,
+  },
+  brandHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  iconContainer: {
+    backgroundColor: '#6366f1',
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  brandTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  textDark: {
+    color: '#fff',
+  },
+  brandDescription: {
+    fontSize: 14,
+    color: '#6b7280',
+    lineHeight: 20,
+  },
+  textSecondaryDark: {
+    color: 'rgba(255,255,255,0.7)',
+  },
+  githubButton: {
+    width: 48,
+    height: 48,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  githubButtonDark: {
+    backgroundColor: '#262626',
+  },
+  copyright: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  copyrightDark: {
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  copyrightText: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+});
 
+export default Footer;

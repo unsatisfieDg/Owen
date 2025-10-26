@@ -1,132 +1,154 @@
 import React from 'react';
-import { Moon, Sun, LogOut, User, Activity } from 'lucide-react';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const isSmallScreen = SCREEN_WIDTH < 375;
 
 const Header = ({ darkMode, setDarkMode, user, onLogout, userName, greeting, onProfileClick }) => {
   return (
-    <div className="fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-5 lg:px-6">
-        {/* Single Container Card - extends down to hide content */}
-        <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl py-3 px-3 sm:px-4 border border-gray-100 dark:border-white/5 shadow-lg mb-4">
+    <View style={[styles.container, darkMode && styles.containerDark]}>
+      <View style={[styles.card, darkMode && styles.cardDark]}>
+        {/* Logo + Title + Greeting */}
+        <View style={styles.leftSection}>
+          <LinearGradient
+            colors={['#6366f1', '#8b5cf6']}
+            style={styles.logo}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Icon name="dumbbell" size={32} color="#fff" />
+          </LinearGradient>
           
-          {/* MOBILE LAYOUT (< 640px) */}
-          <div className="sm:hidden">
-            {/* Compact Header Layout */}
-            <div className="flex items-center justify-between gap-3">
-              {/* Left: Logo + Title */}
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-xl flex-shrink-0">
-                  <Activity className="w-7 h-7 text-white" />
-                </div>
-                
-                <div className="min-w-0 flex-1">
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent leading-tight truncate">
-                    MacroGenie
-                  </h1>
-                  <h2 className="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate">
-                    {greeting}, {userName || 'there'}!
-                  </h2>
-                </div>
-              </div>
-              
-              {/* Right: Action Buttons */}
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                {/* My Stats */}
-                <button
-                  onClick={onProfileClick}
-                  className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-all duration-200 flex items-center justify-center"
-                  aria-label="My Stats"
-                >
-                  <User className="w-4.5 h-4.5 text-indigo-600 dark:text-indigo-400" />
-                </button>
-                
-                {/* Dark Mode */}
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center"
-                  aria-label="Toggle dark mode"
-                >
-                  {darkMode ? (
-                    <Sun className="w-4.5 h-4.5 text-yellow-400" />
-                  ) : (
-                    <Moon className="w-4.5 h-4.5 text-gray-700 dark:text-gray-300" />
-                  )}
-                </button>
-                
-                {/* Logout */}
-                {user && (
-                  <button
-                    onClick={onLogout}
-                    className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200 flex items-center justify-center"
-                    aria-label="Logout"
-                  >
-                    <LogOut className="w-4.5 h-4.5 text-red-600 dark:text-red-400" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {/* DESKTOP LAYOUT (≥ 640px) */}
-          <div className="hidden sm:flex sm:items-center sm:justify-between gap-4">
-            {/* Logo + Title + Greeting */}
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              {/* Logo */}
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-xl flex-shrink-0">
-                <Activity className="w-8 h-8 text-white" />
-              </div>
-              
-              {/* Title + Greeting Stack */}
-              <div className="min-w-0 flex-1">
-                <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent leading-tight truncate">
-                  MacroGenie
-                </h1>
-                <h2 className="text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300 truncate">
+          <View style={styles.titleContainer}>
+            <Text style={[styles.greeting, darkMode && styles.greetingDark]}>
                   {greeting}, {userName || 'there'}!
-                </h2>
-              </div>
-      </div>
-            
-            {/* Buttons Row */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            </Text>
+          </View>
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.buttonsContainer}>
               {/* My Stats Button */}
-              <button
-                onClick={onProfileClick}
-                className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 dark:bg-indigo-700 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 hover-lift text-sm font-medium"
-              >
-                <User className="w-4 h-4" />
-                <span>My Stats</span>
-              </button>
+          <TouchableOpacity
+            style={[styles.button, styles.profileButton]}
+            onPress={onProfileClick}
+          >
+            <Icon name="account" size={20} color="#fff" />
+          </TouchableOpacity>
               
               {/* Dark Mode Toggle */}
-      <button
-        onClick={() => setDarkMode(!darkMode)}
-                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center"
-                aria-label="Toggle dark mode"
-              >
-                {darkMode ? (
-                  <Sun className="w-4.5 h-4.5 text-yellow-400" />
-                ) : (
-                  <Moon className="w-4.5 h-4.5 text-gray-700 dark:text-gray-300" />
-                )}
-              </button>
+          <TouchableOpacity
+            style={[styles.button, darkMode ? styles.darkButton : styles.lightButton]}
+            onPress={() => setDarkMode(!darkMode)}
+          >
+            <Icon 
+              name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} 
+              size={20} 
+              color={darkMode ? '#fbbf24' : '#6b7280'} 
+            />
+          </TouchableOpacity>
               
               {/* Logout Button */}
               {user && (
-                <button
-                  onClick={onLogout}
-                  className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all duration-200 flex items-center justify-center"
-                  aria-label="Logout"
-                >
-                  <LogOut className="w-4.5 h-4.5 text-red-600 dark:text-red-400" />
-      </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            <TouchableOpacity
+              style={[styles.button, styles.logoutButton]}
+              onPress={onLogout}
+            >
+              <Icon name="logout" size={20} color="#ef4444" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    </View>
   );
 };
 
-export default Header;
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: isSmallScreen ? 12 : 16,
+    paddingVertical: 12,
+    backgroundColor: '#f8f9fa',
+    paddingTop: Platform.OS === 'android' ? 12 : 0,
+  },
+  containerDark: {
+    backgroundColor: '#0f0f0f',
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: isSmallScreen ? 12 : 16,
+    padding: isSmallScreen ? 12 : 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  cardDark: {
+    backgroundColor: '#1a1a1a',
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  logo: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  titleContainer: {
+    flex: 1,
+  },
+  title: {
+    fontSize: isSmallScreen ? 16 : 20,
+    fontWeight: 'bold',
+    color: '#6366f1',
+  },
+  titleDark: {
+    color: '#8b5cf6',
+  },
+  greeting: {
+    fontSize: isSmallScreen ? 12 : 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  greetingDark: {
+    color: '#d1d5db',
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  button: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileButton: {
+    backgroundColor: '#6366f1',
+  },
+  lightButton: {
+    backgroundColor: '#f3f4f6',
+  },
+  darkButton: {
+    backgroundColor: '#374151',
+  },
+  logoutButton: {
+    backgroundColor: '#fee2e2',
+  },
+});
 
+export default Header;

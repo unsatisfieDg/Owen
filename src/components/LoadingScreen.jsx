@@ -1,49 +1,107 @@
-import React, { useEffect } from 'react';
-import { Activity } from 'lucide-react';
+import React from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
-const LoadingScreen = ({ isLoading, onComplete }) => {
-  useEffect(() => {
-    if (!isLoading) {
-      const timer = setTimeout(() => {
-        if (onComplete) onComplete();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, onComplete]);
+const LoadingScreen = () => {
+  const pulseAnim = new Animated.Value(1);
 
-  if (!isLoading) return null;
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:bg-[#0f0f0f]">
-      <div className="text-center animate-fade-in-up">
+    <View style={styles.container}>
+      <View style={styles.content}>
         {/* Animated Logo */}
-        <div className="relative mb-8">
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-3xl shadow-2xl animate-float mx-auto w-24 h-24 flex items-center justify-center">
-            <Activity className="w-12 h-12 text-white animate-pulse" />
-          </div>
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-3xl blur-xl opacity-50 animate-pulse"></div>
-        </div>
+        <View style={styles.logoContainer}>
+          <LinearGradient
+            colors={['#6366f1', '#8b5cf6', '#a855f7']}
+            style={styles.logoGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+              <Icon name="dumbbell" size={60} color="#fff" />
+            </Animated.View>
+          </LinearGradient>
+        </View>
 
         {/* App Name */}
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3 animate-fade-in-up">
-          MacroGenie
-        </h1>
-        
-        {/* Tagline */}
-        <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-          Smart Nutrition Assistant
-        </p>
+        <Text style={styles.appName}>MacroGenius</Text>
 
-        {/* Loading Spinner */}
-        <div className="flex justify-center gap-2 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-          <div className="w-3 h-3 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-          <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-          <div className="w-3 h-3 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-        </div>
-      </div>
-    </div>
+        {/* Tagline */}
+        <Text style={styles.tagline}>Track Your Nutrition</Text>
+
+        {/* Loading Dots */}
+        <View style={styles.dotsContainer}>
+          <View style={[styles.dot, { backgroundColor: '#6366f1' }]} />
+          <View style={[styles.dot, { backgroundColor: '#a855f7' }]} />
+          <View style={[styles.dot, { backgroundColor: '#6366f1' }]} />
+        </View>
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    alignItems: 'center',
+  },
+  logoContainer: {
+    marginBottom: 32,
+  },
+  logoGradient: {
+    width: 120,
+    height: 120,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 10,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+  },
+  appName: {
+    fontSize: 42,
+    fontWeight: 'bold',
+    color: '#6366f1',
+    marginBottom: 8,
+  },
+  tagline: {
+    fontSize: 18,
+    color: '#6b7280',
+    marginBottom: 32,
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  dot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+});
 
 export default LoadingScreen;

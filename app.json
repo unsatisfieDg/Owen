@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "MacroGenius",
+    "slug": "macrogenius",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "main": "index.js",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#f8f9fa"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.macrogenius.app",
+      "requiresFullScreen": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#6366f1"
+      },
+      "package": "com.macrogenius.app",
+      "softwareKeyboardLayoutMode": "pan"
+    },
+    "web": {},
+    "plugins": [
+      "expo-font",
+      [
+        "expo-barcode-scanner",
+        {
+          "cameraPermission": "Allow MacroGenius to access your camera to scan food barcodes."
+        }
+      ]
+    ],
+    "sdkVersion": "54.0.0",
+    "extra": {
+      "edamamFoodAppId": "YOUR_EDAMAM_FOOD_APP_ID",
+      "edamamFoodAppKey": "YOUR_EDAMAM_FOOD_APP_KEY"
+    }
+  }
+}
+
