@@ -30,7 +30,8 @@
         {
           "cameraPermission": "Allow MacroGenius to access your camera to scan food barcodes."
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "sdkVersion": "54.0.0",
     "extra": {
@@ -39,4 +40,3 @@
     }
   }
 }
-

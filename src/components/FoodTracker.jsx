@@ -18,6 +18,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { searchFood } from '../utils/api';
 import { searchFoodDatabase } from '../utils/foodDatabase';
+import { useCustomFoods } from '../hooks/useCustomFoods';
+import { useFoodDatabase } from '../hooks/useFoodDatabase';
 
 // Conditionally import BarCodeScanner (not available in Expo Go)
 let BarCodeScanner = null;
@@ -29,7 +31,7 @@ try {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus, onInputBlur }) => {
+const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus, onInputBlur, user }) => {
   const [foodSearch, setFoodSearch] = useState('');
   const [foodAmount, setFoodAmount] = useState('100');
   const [searchResults, setSearchResults] = useState([]);
@@ -46,6 +48,16 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [isLoadingBarcode, setIsLoadingBarcode] = useState(false);
+
+  // Custom Foods
+  const { customFoods, addCustomFood } = useCustomFoods(user?.id);
+  const [showCustomFoodModal, setShowCustomFoodModal] = useState(false);
+  const [customFoodForm, setCustomFoodForm] = useState({
+    name: '', serving: '100', calories: '', protein: '', carbs: '', fats: ''
+  });
+
+  // SQLite Offline Database
+  const { isReady: isDbReady, searchFoods: searchSQLite } = useFoodDatabase();
 
   // Manage parent scroll based on input focus
   useEffect(() => {
@@ -70,7 +82,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
   }, []);
 
   // Live search from local database as user types
-  const handleInputChange = (text) => {
+  const handleInputChange = async (text) => {
     setFoodSearch(text);
     
     // Ensure parent scroll stays locked while typing
@@ -78,10 +90,19 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
       setIsInputFocused(true);
     }
     
-    // Re-enabled live results (now with absolute positioning)
     if (text.trim().length >= 2) {
-      const localResults = searchFoodDatabase(text);
-      setLiveResults(localResults.slice(0, 5));
+      // Search SQLite offline database first (massive 10k+ item DB)
+      const sqliteResults = isDbReady ? await searchSQLite(text) : [];
+      // Also search legacy local array as a fallback
+      const legacyResults = searchFoodDatabase(text);
+      const customResults = customFoods.filter(f => f.name.toLowerCase().includes(text.toLowerCase()));
+      // Merge: custom first, then SQLite, then legacy (deduplicated)
+      const merged = [
+        ...customResults,
+        ...sqliteResults,
+        ...legacyResults.filter(l => !sqliteResults.some(s => s.name.toLowerCase() === l.name.toLowerCase()))
+      ].slice(0, 8);
+      setLiveResults(merged);
     } else {
       setLiveResults([]);
     }
@@ -98,22 +119,27 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
     setShowResults(true);
     
     try {
-      // Try API first
+      // Try API first (online)
       const apiResults = await searchFood(foodSearch);
       
-      // Also get local results
+      // Also get offline SQLite + legacy + custom results
+      const sqliteResults = isDbReady ? await searchSQLite(foodSearch) : [];
       const localResults = searchFoodDatabase(foodSearch);
-      
-      // Combine results (API first, then local if API returns few results)
-      let combined = [...apiResults];
-      if (apiResults.length < 5) {
-        const additionalLocal = localResults
-          .filter(local => !apiResults.some(api => 
-            api.name.toLowerCase() === local.name.toLowerCase()
-          ))
-          .slice(0, 10 - apiResults.length);
-        combined = [...combined, ...additionalLocal];
-      }
+      const customResults = customFoods.filter(f => f.name.toLowerCase().includes(foodSearch.toLowerCase()));
+
+      // Merge: custom > SQLite > API > legacy (deduplicated by name)
+      const seen = new Set();
+      const combined = [
+        ...customResults,
+        ...sqliteResults,
+        ...apiResults,
+        ...localResults
+      ].filter(item => {
+        const key = item.name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0, 20);
       
       setSearchResults(combined);
       
@@ -122,11 +148,20 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
       }
     } catch (error) {
       console.error('Food search error:', error);
-      // Fallback to local database
+      // Fully offline fallback: SQLite + legacy + custom
+      const sqliteResults = isDbReady ? await searchSQLite(foodSearch) : [];
       const localResults = searchFoodDatabase(foodSearch);
-      setSearchResults(localResults);
+      const customResults = customFoods.filter(f => f.name.toLowerCase().includes(foodSearch.toLowerCase()));
+      const seen = new Set();
+      const offlineResults = [...customResults, ...sqliteResults, ...localResults].filter(item => {
+        const key = item.name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).slice(0, 20);
+      setSearchResults(offlineResults);
       
-      if (localResults.length === 0) {
+      if (offlineResults.length === 0) {
         Alert.alert('No Results', 'No food found. Try a different name!');
       }
     } finally {
@@ -516,6 +551,21 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
                     </TouchableOpacity>
                   </View>
                 )}
+
+                {/* Create Custom Food Button inside Search Results */}
+                <View style={styles.createCustomFoodContainer}>
+                  <Text style={styles.createCustomFoodText}>Can't find what you're looking for?</Text>
+                  <TouchableOpacity 
+                    style={styles.createCustomFoodBtn} 
+                    onPress={() => {
+                      setShowResults(false);
+                      setShowCustomFoodModal(true);
+                      setCustomFoodForm({...customFoodForm, name: foodSearch});
+                    }}
+                  >
+                    <Text style={styles.createCustomFoodBtnText}>Create Custom Food</Text>
+                  </TouchableOpacity>
+                </View>
               </>
             )}
           </View>
@@ -595,6 +645,118 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
             </TouchableOpacity>
           </View>
         </View>
+      </Modal>
+
+      {/* Custom Food Modal */}
+      <Modal visible={showCustomFoodModal} animationType="slide" transparent={true}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Create Custom Food</Text>
+              <TouchableOpacity onPress={() => setShowCustomFoodModal(false)}>
+                <Icon name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.resultsScroll} keyboardShouldPersistTaps="handled">
+              <View style={styles.customFoodFormContainer}>
+                <Text style={styles.amountLabel}>Food Name</Text>
+                <TextInput
+                  style={[styles.servingInput, { marginBottom: 12 }]}
+                  placeholder="e.g. Grandma's Cookies"
+                  value={customFoodForm.name}
+                  onChangeText={(text) => setCustomFoodForm({...customFoodForm, name: text})}
+                />
+                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.amountLabel}>Serving Size (g/ml)</Text>
+                    <TextInput
+                      style={styles.servingInput}
+                      keyboardType="numeric"
+                      placeholder="100"
+                      value={customFoodForm.serving}
+                      onChangeText={(text) => setCustomFoodForm({...customFoodForm, serving: text})}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.amountLabel}>Calories (kcal)</Text>
+                    <TextInput
+                      style={styles.servingInput}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      value={customFoodForm.calories}
+                      onChangeText={(text) => setCustomFoodForm({...customFoodForm, calories: text})}
+                    />
+                  </View>
+                </View>
+                <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.amountLabel}>Protein (g)</Text>
+                    <TextInput
+                      style={styles.servingInput}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      value={customFoodForm.protein}
+                      onChangeText={(text) => setCustomFoodForm({...customFoodForm, protein: text})}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.amountLabel}>Carbs (g)</Text>
+                    <TextInput
+                      style={styles.servingInput}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      value={customFoodForm.carbs}
+                      onChangeText={(text) => setCustomFoodForm({...customFoodForm, carbs: text})}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.amountLabel}>Fats (g)</Text>
+                    <TextInput
+                      style={styles.servingInput}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      value={customFoodForm.fats}
+                      onChangeText={(text) => setCustomFoodForm({...customFoodForm, fats: text})}
+                    />
+                  </View>
+                </View>
+                <TouchableOpacity 
+                  style={styles.addButton} 
+                  onPress={async () => {
+                    if (!customFoodForm.name || !customFoodForm.calories) {
+                      Alert.alert('Missing Info', 'Please provide at least a name and calories.');
+                      return;
+                    }
+                    const newFood = {
+                      id: Date.now().toString(),
+                      name: customFoodForm.name,
+                      category: 'custom',
+                      serving: parseFloat(customFoodForm.serving) || 100,
+                      calories: parseFloat(customFoodForm.calories) || 0,
+                      protein: parseFloat(customFoodForm.protein) || 0,
+                      carbs: parseFloat(customFoodForm.carbs) || 0,
+                      fats: parseFloat(customFoodForm.fats) || 0
+                    };
+                    await addCustomFood(newFood);
+                    setShowCustomFoodModal(false);
+                    setFoodSearch(newFood.name);
+                    setSelectedFood(newFood);
+                    setSearchResults([newFood]);
+                    setShowResults(true);
+                  }}
+                >
+                  <LinearGradient colors={['#10b981', '#059669']} style={styles.addButtonGradient}>
+                    <Icon name="content-save" size={20} color="#fff" />
+                    <Text style={styles.addButtonText}>Save Custom Food</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -805,6 +967,34 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  createCustomFoodContainer: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    alignItems: 'center',
+  },
+  createCustomFoodText: {
+    color: '#6b7280',
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  createCustomFoodBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#f3f4f6',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+  },
+  createCustomFoodBtnText: {
+    color: '#374151',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  customFoodFormContainer: {
+    paddingBottom: 20,
   },
   foodLogHeader: {
     flexDirection: 'row',

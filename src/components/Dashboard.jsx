@@ -196,6 +196,7 @@ const Dashboard = ({
           darkMode={darkMode}
           onInputFocus={handleInputFocus}
           onInputBlur={handleInputBlur}
+          user={user}
         />
 
         {/* Footer */}
