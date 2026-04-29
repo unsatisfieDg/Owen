@@ -22,6 +22,8 @@
 - **Quick Add** - Add foods with custom serving sizes in grams
 - **Smart Predictions** - Live search results as you type
 - **Barcode Scanner** 📷 - Scan food barcodes and auto-add nutrition (calories, carbs, protein per serving)
+- **SQLite Offline Database** 📂 - 9,000+ precise food items with USDA-standardized nutrition data
+- **Offline On-Device AI** 🤖 - Hybrid AI Coach that runs locally on high-end devices and falls back to Cloud AI on older models
 
 ### 🎯 Goal Completion System
 - **Daily Completion Tracking** - Get notified when you hit your daily macros (95%+ target)
@@ -337,11 +339,13 @@ For issues, questions, or feature requests:
 - [x] **Barcode scanner for food tracking** - Scan and auto-add foods!
 
 ### 🔮 Future Features Under Consideration:
-- [ ] Weekly/monthly analytics dashboard
+- [x] Weekly/monthly analytics dashboard
+- [x] Custom food creation
+- [x] SQLite Offline Database (9,000+ items)
+- [x] Hybrid AI Assistant (On-device + Cloud)
 - [ ] Meal planning and recipes
 - [ ] Export data (CSV/PDF)
 - [ ] Social features (share progress)
-- [ ] Custom food creation
 - [ ] Water intake tracking
 - [ ] Weight trend charts
 - [ ] Multiple barcode scans in sequence
