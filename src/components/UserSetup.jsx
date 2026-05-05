@@ -19,15 +19,19 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const isSmallScreen = SCREEN_WIDTH < 375;
 
 const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
+  const [formData, setFormData] = useState(userData || {
+    name: '', age: '', height: '', weight: '', gender: '',
+    activityLevel: '', goal: '', targetWeight: ''
+  });
   const [isValid, setIsValid] = useState(false);
 
   const validateForm = () => {
     const basicValid =
-      userData.name && userData.age && userData.height && userData.weight &&
-      userData.gender && userData.activityLevel && userData.goal;
+      formData.name && formData.age && formData.height && formData.weight &&
+      formData.gender && formData.activityLevel && formData.goal;
 
-    const needsTargetWeight = userData.goal !== 'maintain' && userData.goal !== '';
-    const targetWeightValid = needsTargetWeight ? (userData.targetWeight && userData.targetWeight.trim() !== '') : true;
+    const needsTargetWeight = formData.goal !== 'maintain' && formData.goal !== '';
+    const targetWeightValid = needsTargetWeight ? (formData.targetWeight && formData.targetWeight.trim() !== '') : true;
 
     const valid = basicValid && targetWeightValid;
     setIsValid(valid);
@@ -35,14 +39,15 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
 
   useEffect(() => {
     validateForm();
-  }, [userData]);
+  }, [formData]);
 
   const handleInputChange = (field, value) => {
-    setUserData({ ...userData, [field]: value });
+    setFormData({ ...formData, [field]: value });
   };
 
   const handleComplete = () => {
     if (isValid) {
+      setUserData(formData); // Sync with App.js state only on completion
       onComplete();
       // Navigation will happen automatically via App.js
     }
@@ -78,10 +83,10 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
               style={styles.input}
               placeholder="Enter your name"
               placeholderTextColor="#9ca3af"
-              value={userData.name || ''}
+              value={formData.name || ''}
               onChangeText={(value) => handleInputChange('name', value)}
             />
-            {userData.name ? (
+            {formData.name ? (
               <Icon name="check-circle" size={20} color="#10b981" style={styles.checkIcon} />
             ) : null}
           </View>
@@ -94,7 +99,7 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
                 style={styles.input}
                 placeholder="Age"
                 placeholderTextColor="#9ca3af"
-                value={userData.age || ''}
+                value={formData.age || ''}
                 onChangeText={(value) => handleInputChange('age', value)}
                 keyboardType="numeric"
               />
@@ -104,7 +109,8 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
               <Text style={styles.label}>Gender</Text>
               <View style={styles.pickerWrapper}>
                 <Picker
-                  selectedValue={userData.gender}
+                  mode="dialog"
+                  selectedValue={formData.gender}
                   onValueChange={(value) => handleInputChange('gender', value)}
                   style={styles.picker}
                   itemStyle={styles.pickerItem}
@@ -125,7 +131,7 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
                 style={styles.input}
                 placeholder="Height"
                 placeholderTextColor="#9ca3af"
-                value={userData.height || ''}
+                value={formData.height || ''}
                 onChangeText={(value) => handleInputChange('height', value)}
                 keyboardType="numeric"
               />
@@ -137,7 +143,7 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
                 style={styles.input}
                 placeholder="Weight"
                 placeholderTextColor="#9ca3af"
-                value={userData.weight || ''}
+                value={formData.weight || ''}
                 onChangeText={(value) => handleInputChange('weight', value)}
                 keyboardType="decimal-pad"
               />
@@ -149,7 +155,8 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
             <Text style={styles.label}>Activity Level</Text>
             <View style={styles.pickerWrapper}>
               <Picker
-                selectedValue={userData.activityLevel}
+                mode="dialog"
+                selectedValue={formData.activityLevel}
                 onValueChange={(value) => handleInputChange('activityLevel', value)}
                 style={styles.picker}
                 itemStyle={styles.pickerItem}
@@ -169,7 +176,8 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
             <Text style={styles.label}>Goal</Text>
             <View style={styles.pickerWrapper}>
               <Picker
-                selectedValue={userData.goal}
+                mode="dialog"
+                selectedValue={formData.goal}
                 onValueChange={(value) => handleInputChange('goal', value)}
                 style={styles.picker}
                 itemStyle={styles.pickerItem}
@@ -185,24 +193,24 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
           </View>
 
           {/* Target Weight (conditional) */}
-          {userData.goal && userData.goal !== 'maintain' && (
+          {formData.goal && formData.goal !== 'maintain' && (
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Target Weight (kg) 🎯</Text>
               <TextInput
                 style={styles.input}
                 placeholder="Enter target weight"
                 placeholderTextColor="#9ca3af"
-                value={userData.targetWeight || ''}
+                value={formData.targetWeight || ''}
                 onChangeText={(value) => handleInputChange('targetWeight', value)}
                 keyboardType="decimal-pad"
               />
               <Text style={styles.hint}>
                 💡 This is your goal weight for{' '}
-                {userData.goal === 'muscle'
+                {formData.goal === 'muscle'
                   ? 'bulking'
-                  : userData.goal === 'loss'
+                  : formData.goal === 'loss'
                   ? 'cutting'
-                  : userData.goal === 'slowloss'
+                  : formData.goal === 'slowloss'
                   ? 'losing weight'
                   : 'recomp'}
               </Text>
@@ -312,7 +320,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#d1d5db',
     borderRadius: 12,
-    overflow: 'hidden',
     backgroundColor: '#fff',
   },
   picker: {

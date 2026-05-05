@@ -2,24 +2,20 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import FloatingMascot from './FloatingMascot';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const isSmallScreen = SCREEN_WIDTH < 375;
 
-const Header = ({ darkMode, setDarkMode, user, onLogout, userName, greeting, onProfileClick }) => {
+const Header = ({ darkMode, setDarkMode, user, userName, greeting, onProfileClick }) => {
   return (
     <View style={[styles.container, darkMode && styles.containerDark]}>
       <View style={[styles.card, darkMode && styles.cardDark]}>
         {/* Logo + Title + Greeting */}
         <View style={styles.leftSection}>
-          <LinearGradient
-            colors={['#6366f1', '#8b5cf6']}
-            style={styles.logo}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Icon name="dumbbell" size={32} color="#fff" />
-          </LinearGradient>
+          <View style={styles.mascotContainer}>
+            <FloatingMascot size={56} />
+          </View>
           
           <View style={styles.titleContainer}>
             <Text style={[styles.greeting, darkMode && styles.greetingDark]}>
@@ -49,16 +45,6 @@ const Header = ({ darkMode, setDarkMode, user, onLogout, userName, greeting, onP
               color={darkMode ? '#fbbf24' : '#6b7280'} 
             />
           </TouchableOpacity>
-              
-              {/* Logout Button */}
-              {user && (
-            <TouchableOpacity
-              style={[styles.button, styles.logoutButton]}
-              onPress={onLogout}
-            >
-              <Icon name="logout" size={20} color="#ef4444" />
-            </TouchableOpacity>
-          )}
         </View>
       </View>
     </View>
@@ -99,13 +85,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  logo: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+  mascotContainer: {
     marginRight: 12,
+    marginTop: -8, // slight adjustment to make it pop out
   },
   titleContainer: {
     flex: 1,
@@ -145,9 +127,6 @@ const styles = StyleSheet.create({
   },
   darkButton: {
     backgroundColor: '#374151',
-  },
-  logoutButton: {
-    backgroundColor: '#fee2e2',
   },
 });
 

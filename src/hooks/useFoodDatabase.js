@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as SQLite from 'expo-sqlite';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Asset } from 'expo-asset';
 
 export const useFoodDatabase = () => {

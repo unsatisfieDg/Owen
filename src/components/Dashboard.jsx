@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { View, Text, ScrollView, StyleSheet, Platform, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
@@ -22,15 +22,14 @@ const Dashboard = ({
   darkMode,
   setDarkMode,
   user,
-  onLogout,
   calculateNutrition,
   navigation,
 }) => {
-  const [scrollEnabled, setScrollEnabled] = React.useState(true);
-  const scrollViewRef = React.useRef(null);
-  const [scrollPosition, setScrollPosition] = React.useState(0);
-  const lockedScrollPosition = React.useRef(0);
-  const isScrollLocked = React.useRef(false);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+  const scrollViewRef = useRef(null);
+  const currentScrollY = useRef(0);
+  const lockedScrollPosition = useRef(0);
+  const isScrollLocked = useRef(false);
 
   // Completion tracking
   const {
@@ -46,7 +45,7 @@ const Dashboard = ({
 
   const [completionChecked, setCompletionChecked] = useState(false);
 
-  // Check if macros are complete (Calories, Protein, Carbs only)
+  // Check if macros are complete (Calories, Protein, Carbs, Fats)
   const checkMacrosComplete = useCallback(() => {
     if (!nutrition || !nutrition.tdee || !dailyLog || hasCompletedToday || completionChecked) {
       return false;
@@ -55,8 +54,9 @@ const Dashboard = ({
     const caloriesComplete = dailyLog.calories >= nutrition.tdee * 0.95;
     const proteinComplete = dailyLog.protein >= nutrition.protein * 0.95;
     const carbsComplete = dailyLog.carbs >= nutrition.carbs * 0.95;
+    const fatsComplete = dailyLog.fats >= nutrition.fats * 0.95;
 
-    return caloriesComplete && proteinComplete && carbsComplete;
+    return caloriesComplete && proteinComplete && carbsComplete && fatsComplete;
   }, [nutrition, dailyLog, hasCompletedToday, completionChecked]);
 
   // Check for completion when daily log changes
@@ -91,10 +91,10 @@ const Dashboard = ({
 
   const handleInputFocus = useCallback(() => {
     // Save and lock the current scroll position
-    lockedScrollPosition.current = scrollPosition;
+    lockedScrollPosition.current = currentScrollY.current;
     isScrollLocked.current = true;
     setScrollEnabled(false);
-  }, [scrollPosition]);
+  }, []);
 
   const handleInputBlur = useCallback(() => {
     // Unlock scroll
@@ -108,7 +108,6 @@ const Dashboard = ({
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         user={user}
-        onLogout={onLogout}
         userName={userData.name}
         greeting={getGreeting()}
         onProfileClick={() => navigation.navigate('Profile')}
@@ -129,17 +128,19 @@ const Dashboard = ({
           const currentY = e.nativeEvent.contentOffset.y;
           
           if (isScrollLocked.current) {
-            // Force scroll back immediately if locked
-            e.preventDefault?.();
-            requestAnimationFrame(() => {
-              scrollViewRef.current?.scrollTo({ 
-                y: lockedScrollPosition.current, 
-                animated: false 
+            // Force scroll back only if it drifted
+            if (Math.abs(currentY - lockedScrollPosition.current) > 2) {
+              e.preventDefault?.();
+              requestAnimationFrame(() => {
+                scrollViewRef.current?.scrollTo({ 
+                  y: lockedScrollPosition.current, 
+                  animated: false 
+                });
               });
-            });
+            }
           } else {
-            // Normal scrolling - save position
-            setScrollPosition(currentY);
+            // Normal scrolling - save position to ref (prevents re-renders)
+            currentScrollY.current = currentY;
           }
         }}
         onScrollBeginDrag={() => {

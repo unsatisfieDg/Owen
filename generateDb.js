@@ -52,7 +52,22 @@ const preciseFoods = [
     { name: "Bangus (Milkfish), Raw", category: "protein", calories: 148, protein: 20.5, carbs: 0, fats: 6.7 },
     { name: "Tilapia, Raw", category: "protein", calories: 96, protein: 20.1, carbs: 0, fats: 1.7 },
     { name: "Pechay, Raw", category: "vegetable", calories: 13, protein: 1.5, carbs: 2.2, fats: 0.2 },
-    { name: "Kamote (Sweet Potato), Raw", category: "carbs", calories: 86, protein: 1.6, carbs: 20.1, fats: 0.1 }
+    { name: "Kamote (Sweet Potato), Raw", category: "carbs", calories: 86, protein: 1.6, carbs: 20.1, fats: 0.1 },
+    { name: "Whey Protein Isolate, Vanilla", category: "protein", calories: 110, protein: 25, carbs: 1, fats: 0.5 },
+    { name: "Greek Yogurt, Plain, Nonfat", category: "protein", calories: 59, protein: 10, carbs: 3.6, fats: 0.4 },
+    { name: "Peanut Butter, Smooth", category: "fats", calories: 588, protein: 25, carbs: 20, fats: 50 },
+    { name: "Tuna, Canned in Water, Drained", category: "protein", calories: 116, protein: 25.5, carbs: 0, fats: 0.8 },
+    { name: "Cottage Cheese, Low Fat (1%)", category: "protein", calories: 72, protein: 12.4, carbs: 2.7, fats: 1 },
+    { name: "Quinoa, Cooked", category: "carbs", calories: 120, protein: 4.4, carbs: 21.3, fats: 1.9 },
+    { name: "Lentils, Cooked", category: "carbs", calories: 116, protein: 9, carbs: 20.1, fats: 0.4 },
+    { name: "Spinach, Raw", category: "vegetable", calories: 23, protein: 2.9, carbs: 3.6, fats: 0.4 },
+    { name: "Banana, Raw", category: "carbs", calories: 89, protein: 1.1, carbs: 22.8, fats: 0.3 },
+    { name: "Apple, Raw with Skin", category: "carbs", calories: 52, protein: 0.3, carbs: 13.8, fats: 0.2 },
+    { name: "Milk, Whole (3.25%)", category: "fats", calories: 61, protein: 3.1, carbs: 4.8, fats: 3.2 },
+    { name: "Milk, Skim", category: "protein", calories: 34, protein: 3.4, carbs: 5, fats: 0.1 },
+    { name: "Beef, Steak, Sirloin, Grilled", category: "protein", calories: 244, protein: 29.1, carbs: 0, fats: 13.1 },
+    { name: "Pork Chop, Boneless, Cooked", category: "protein", calories: 196, protein: 29.7, carbs: 0, fats: 7.7 },
+    { name: "Tofu, Firm, Raw", category: "protein", calories: 144, protein: 15.8, carbs: 2.8, fats: 8.7 }
 ];
 
 // Duplicate the array many times to simulate a massive 10,000+ item database to prove SQLite performance

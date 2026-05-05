@@ -16,10 +16,10 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { searchFood } from '../utils/api';
 import { searchFoodDatabase } from '../utils/foodDatabase';
 import { useCustomFoods } from '../hooks/useCustomFoods';
 import { useFoodDatabase } from '../hooks/useFoodDatabase';
+import AIAssistantModal from './AIAssistantModal';
 
 // Conditionally import BarCodeScanner (not available in Expo Go)
 let BarCodeScanner = null;
@@ -48,6 +48,9 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [isLoadingBarcode, setIsLoadingBarcode] = useState(false);
+
+  // AI Assistant state
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
 
   // Custom Foods
   const { customFoods, addCustomFood } = useCustomFoods(user?.id);
@@ -119,20 +122,16 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
     setShowResults(true);
     
     try {
-      // Try API first (online)
-      const apiResults = await searchFood(foodSearch);
-      
-      // Also get offline SQLite + legacy + custom results
+      // Offline Search: SQLite + Legacy + Custom
       const sqliteResults = isDbReady ? await searchSQLite(foodSearch) : [];
       const localResults = searchFoodDatabase(foodSearch);
       const customResults = customFoods.filter(f => f.name.toLowerCase().includes(foodSearch.toLowerCase()));
 
-      // Merge: custom > SQLite > API > legacy (deduplicated by name)
+      // Merge: custom > SQLite > legacy (deduplicated by name)
       const seen = new Set();
       const combined = [
         ...customResults,
         ...sqliteResults,
-        ...apiResults,
         ...localResults
       ].filter(item => {
         const key = item.name.toLowerCase();
@@ -148,22 +147,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
       }
     } catch (error) {
       console.error('Food search error:', error);
-      // Fully offline fallback: SQLite + legacy + custom
-      const sqliteResults = isDbReady ? await searchSQLite(foodSearch) : [];
-      const localResults = searchFoodDatabase(foodSearch);
-      const customResults = customFoods.filter(f => f.name.toLowerCase().includes(foodSearch.toLowerCase()));
-      const seen = new Set();
-      const offlineResults = [...customResults, ...sqliteResults, ...localResults].filter(item => {
-        const key = item.name.toLowerCase();
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      }).slice(0, 20);
-      setSearchResults(offlineResults);
-      
-      if (offlineResults.length === 0) {
-        Alert.alert('No Results', 'No food found. Try a different name!');
-      }
+      Alert.alert('Error', 'Failed to search foods.');
     } finally {
       setIsSearching(false);
     }
@@ -455,6 +439,19 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
             </LinearGradient>
           </TouchableOpacity>
         )}
+
+        {/* AI Assistant Button */}
+        <TouchableOpacity 
+          style={styles.barcodeButton} 
+          onPress={() => setShowAIAssistant(true)}
+        >
+          <LinearGradient
+            colors={['#8b5cf6', '#6d28d9']}
+            style={styles.searchButtonGradient}
+          >
+            <Icon name="robot" size={24} color="#fff" />
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
 
         {/* Live Search Results */}
@@ -758,6 +755,23 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* AI Assistant Modal */}
+      <AIAssistantModal 
+        visible={showAIAssistant}
+        onClose={() => setShowAIAssistant(false)}
+        onAddFood={(food) => {
+          setDailyLog(prev => ({
+            calories: prev.calories + food.calories,
+            protein: prev.protein + food.protein,
+            carbs: prev.carbs + food.carbs,
+            fats: prev.fats + food.fats,
+            foods: [...prev.foods, food]
+          }));
+          setShowAIAssistant(false);
+        }}
+        user={user}
+      />
     </View>
   );
 };

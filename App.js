@@ -6,27 +6,22 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import LoadingScreen from './src/components/LoadingScreen';
-import AuthForm from './src/components/AuthForm';
 import UserSetup from './src/components/UserSetup';
 import Dashboard from './src/components/Dashboard';
 import UserProfile from './src/components/UserProfile';
 
 import useNutrition from './src/hooks/useNutrition';
 import { useAuth, useUserProfile } from './src/hooks/useAuth';
-import { useSessionManager } from './src/hooks/useSessionManager';
 
 const Stack = createStackNavigator();
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isNewSignup, setIsNewSignup] = useState(false);
 
-  // Authentication
-  const { user, isLoading: authLoading, signup, login, logout, isAuthenticated } = useAuth();
-  
-  // Session management with auto-logout
-  useSessionManager(user, logout);
+  // Authentication - Simplified for local offline-first with background sync
+  const { user } = useAuth();
+
   
   // User Profile
   const { profile, updateProfile } = useUserProfile(user);
@@ -141,6 +136,25 @@ function App() {
     saveWeeklyData();
   }, [user, weeklyData]);
 
+  // The Twist: Background Cloud Syncing for Coach Access
+  useEffect(() => {
+    const syncDataToCoach = async () => {
+      // Simulate network check
+      const isOnline = true; // Assume online for now
+      if (isOnline && user && dailyLog.calories > 0) {
+        console.log(`☁️ [Cloud Sync] Synchronizing ${userData.name || 'Athlete'}'s progress to Coach dashboard...`);
+        // Mock sync delay
+        await new Promise(resolve => setTimeout(resolve, 800));
+        console.log('☁️ [Cloud Sync] Success: Coach has received latest macros and daily log.');
+      }
+    };
+    
+    // Sync every time the daily log updates significantly
+    if (dailyLog.foods.length > 0) {
+      syncDataToCoach();
+    }
+  }, [dailyLog.foods.length]);
+
   const { nutrition, calculateNutrition } = useNutrition(userData, profile);
 
   // Calculate nutrition when userData is loaded or when weight/goal changes
@@ -167,18 +181,7 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleAuth = async (username, password, isLoginMode) => {
-    let result;
-    if (isLoginMode) {
-      result = await login(username, password);
-      setIsNewSignup(false);
-    } else {
-      result = await signup(username, password);
-      setIsNewSignup(true);
-    }
-    
-    return result;
-  };
+  // Authentication removed for on-device priority
 
   const handleSetupComplete = () => {
     // Save current weight and target weight to profile
@@ -188,9 +191,6 @@ function App() {
     if (userData.targetWeight) {
       updateProfile({ targetWeight: parseFloat(userData.targetWeight) });
     }
-    
-    // Reset isNewSignup so navigation switches to Dashboard
-    setIsNewSignup(false);
     
     calculateNutrition();
   };
@@ -206,13 +206,12 @@ function App() {
     }, 100);
   };
 
-  if (isLoading || authLoading) {
+  if (isLoading) {
     return <LoadingScreen />;
   }
 
   // Check if user needs setup
-  const needsSetup = isAuthenticated && (!userData.name || !userData.weight);
-  const shouldShowSetup = isNewSignup || needsSetup;
+  const shouldShowSetup = !userData.name || !userData.weight;
 
   return (
     <SafeAreaProvider>
@@ -223,16 +222,7 @@ function App() {
           translucent={Platform.OS === 'android'}
         />
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {!isAuthenticated ? (
-            <Stack.Screen name="Auth">
-              {(props) => (
-                <AuthForm 
-                  {...props}
-                  onAuth={handleAuth}
-                />
-              )}
-            </Stack.Screen>
-          ) : shouldShowSetup ? (
+          {shouldShowSetup ? (
             <Stack.Screen name="Setup">
               {(props) => (
                 <UserSetup
@@ -257,7 +247,6 @@ function App() {
                     darkMode={darkMode}
                     setDarkMode={setDarkMode}
                     user={user}
-                    onLogout={logout}
                     calculateNutrition={calculateNutrition}
                   />
                 )}
