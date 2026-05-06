@@ -37,13 +37,15 @@ const NutritionInfo = ({ nutrition, userData, darkMode }) => {
 
   return (
     <View style={styles.container}>
+      <Text style={[styles.sectionTitle, darkMode && styles.textDark]}>Daily Macro Targets</Text>
+      
       {/* TDEE + BMI Row */}
       <View style={styles.topRow}>
         {/* Daily Calories Card */}
         <View style={[styles.calorieCard, darkMode && styles.calorieCardDark]}>
           <View style={styles.calorieHeader}>
             <Icon name="fire" size={20} color="#ef4444" />
-            <Text style={[styles.calorieLabel, darkMode && styles.textSecondaryDark]}>Daily Calories</Text>
+            <Text style={[styles.calorieLabel, darkMode && styles.textSecondaryDark]}>Calories</Text>
           </View>
           <Text style={[styles.calorieValue, darkMode && styles.textDark]}>{nutrition.tdee}</Text>
           <Text style={[styles.calorieUnit, darkMode && styles.textSecondaryDark]}>kcal / day</Text>
@@ -59,15 +61,11 @@ const NutritionInfo = ({ nutrition, userData, darkMode }) => {
             <Text style={[styles.calorieLabel, darkMode && styles.textSecondaryDark]}>BMI</Text>
           </View>
           <Text style={[styles.bmiValue, darkMode && styles.textDark]}>{nutrition.bmi}</Text>
-          <Text style={styles.bmiCategory}>{nutrition.bmiCategory}</Text>
-          <Text style={[styles.bmiDesc, darkMode && styles.textSecondaryDark]} numberOfLines={2}>
-            {nutrition.bmiRecommendation}
-          </Text>
+          <Text style={styles.bmiCategory}>{nutrition.bmiCategory} BMI</Text>
         </View>
       </View>
 
       {/* Macro Targets Row */}
-      <Text style={[styles.sectionTitle, darkMode && styles.textDark]}>Daily Macro Targets</Text>
       <View style={styles.macroRow}>
         {macros.map((m) => (
           <View
@@ -192,6 +190,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 10,
+    marginLeft: 4,
   },
   macroRow: {
     flexDirection: 'row',

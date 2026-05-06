@@ -5,7 +5,6 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import Header from './Header';
 import NutritionInfo from './NutritionInfo';
 import NutritionCards from './NutritionCards';
-import MacroPieChart from './MacroPieChart';
 import FoodTracker from './FoodTracker';
 import Footer from './Footer';
 import CompletionModal from './CompletionModal';
@@ -51,10 +50,12 @@ const Dashboard = ({
       return false;
     }
 
+    const fatsTarget = nutrition.fats || Math.round((nutrition.tdee * 0.25) / 9);
+
     const caloriesComplete = dailyLog.calories >= nutrition.tdee * 0.95;
     const proteinComplete = dailyLog.protein >= nutrition.protein * 0.95;
     const carbsComplete = dailyLog.carbs >= nutrition.carbs * 0.95;
-    const fatsComplete = dailyLog.fats >= nutrition.fats * 0.95;
+    const fatsComplete = dailyLog.fats >= fatsTarget * 0.95;
 
     return caloriesComplete && proteinComplete && carbsComplete && fatsComplete;
   }, [nutrition, dailyLog, hasCompletedToday, completionChecked]);
@@ -157,15 +158,21 @@ const Dashboard = ({
           }
         }}
       >
-        {/* Main Content Card */}
+        {/* Nutrition Info Card */}
         <View 
           style={[styles.mainCard, darkMode && styles.mainCardDark]}
           collapsable={false}
           removeClippedSubviews={false}
         >
-          {/* Nutrition Info */}
           <NutritionInfo nutrition={nutrition} userData={userData} darkMode={darkMode} />
+        </View>
 
+        {/* Progress Cards Card */}
+        <View 
+          style={[styles.mainCard, darkMode && styles.mainCardDark]}
+          collapsable={false}
+          removeClippedSubviews={false}
+        >
           {/* Completion Badge */}
           {hasCompletedToday && (
             <View style={[styles.completionBadge, darkMode && styles.completionBadgeDark]}>
@@ -184,9 +191,6 @@ const Dashboard = ({
 
           {/* Progress Cards */}
           <NutritionCards nutrition={nutrition} dailyLog={dailyLog} darkMode={darkMode} />
-
-          {/* Macro Pie Chart */}
-          <MacroPieChart dailyLog={dailyLog} darkMode={darkMode} />
         </View>
 
         {/* Food Tracker */}

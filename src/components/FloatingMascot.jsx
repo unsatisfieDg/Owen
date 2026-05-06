@@ -21,13 +21,13 @@ const FloatingMascot = ({ size = 80 }) => {
         Animated.timing(floatY, {
           toValue: -8,
           duration: 1800,
-          easing: Easing.inOut(Easing.sine),
+          easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(floatY, {
           toValue: 0,
           duration: 1800,
-          easing: Easing.inOut(Easing.sine),
+          easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
       ])
@@ -39,19 +39,19 @@ const FloatingMascot = ({ size = 80 }) => {
         Animated.timing(floatR, {
           toValue: 1,
           duration: 2200,
-          easing: Easing.inOut(Easing.sine),
+          easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(floatR, {
           toValue: -1,
           duration: 2200,
-          easing: Easing.inOut(Easing.sine),
+          easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(floatR, {
           toValue: 0,
           duration: 2200,
-          easing: Easing.inOut(Easing.sine),
+          easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
       ])

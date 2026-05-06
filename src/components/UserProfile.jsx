@@ -123,7 +123,7 @@ const UserProfile = ({
 
           {/* User Info */}
           <View style={[styles.infoCard, darkMode && styles.infoCardDark]}>
-            <Icon name="account-circle" size={64} color="#6366f1" />
+            <Icon name="account-circle" size={64} color="#e11d48" />
             <Text style={styles.username}>{user.username}</Text>
             <Text style={[styles.name, darkMode && styles.nameDark]}>{userData.name}</Text>
           </View>
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#6366f1',
+    color: '#e11d48',
   },
   cancelButton: {
     padding: 4,
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#6366f1',
+    color: '#e11d48',
     marginTop: 12,
   },
   name: {
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#374151',
+    color: '#e11d48',
     marginBottom: 8,
   },
   labelDark: {
@@ -640,11 +640,11 @@ const styles = StyleSheet.create({
   progressValue: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#6366f1',
+    color: '#e11d48',
     marginBottom: 4,
   },
   progressValueDark: {
-    color: '#818cf8',
+    color: '#fda4af',
   },
   progressLabel: {
     fontSize: 12,

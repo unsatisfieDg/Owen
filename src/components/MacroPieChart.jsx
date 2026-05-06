@@ -6,54 +6,45 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const MACRO_CONFIG = [
-  { key: 'protein', name: 'Protein', color: '#6366f1', icon: 'dumbbell',   unit: 'g',    cals: 4 },
-  { key: 'carbs',   name: 'Carbs',   color: '#10b981', icon: 'food-apple', unit: 'g',    cals: 4 },
-  { key: 'fats',    name: 'Fats',    color: '#f59e0b', icon: 'oil',        unit: 'g',    cals: 9 },
+  { key: 'protein', name: 'Protein', color: '#6366f1', icon: 'dumbbell',   cals: 4 },
+  { key: 'carbs',   name: 'Carbs',   color: '#10b981', icon: 'food-apple', cals: 4 },
+  { key: 'fats',    name: 'Fats',    color: '#f59e0b', icon: 'oil',        cals: 9 },
 ];
 
 const MacroPieChart = ({ dailyLog, darkMode }) => {
   const chartWidth = SCREEN_WIDTH - 48;
 
-  // Build pie data from actual macro grams
-  const pieData = MACRO_CONFIG.map((m) => ({
-    name: m.name,
-    value: Math.max(dailyLog[m.key] || 0, 0.001), // avoid 0 in pie
-    color: m.color,
-    legendFontColor: darkMode ? 'rgba(255,255,255,0.6)' : '#6b7280',
-    legendFontSize: 12,
+  const macroCals = MACRO_CONFIG.map((m) => ({
+    ...m,
+    grams: Math.round(dailyLog[m.key] || 0),
+    calories: Math.round((dailyLog[m.key] || 0) * m.cals),
   }));
 
-  const totalGrams =
-    (dailyLog.protein || 0) + (dailyLog.carbs || 0) + (dailyLog.fats || 0);
+  const totalCalFromMacros = macroCals.reduce((sum, m) => sum + m.calories, 0);
+  const hasData = totalCalFromMacros > 0;
 
-  // Total calories from macros (4-4-9 rule)
-  const calFromMacros =
-    (dailyLog.protein || 0) * 4 +
-    (dailyLog.carbs || 0) * 4 +
-    (dailyLog.fats || 0) * 9;
-
-  const hasData = totalGrams > 0;
+  // Pie data — grams per macro, labels hidden
+  const pieData = macroCals.map((m) => ({
+    name: m.name,
+    value: Math.max(m.grams, 0.001),
+    color: m.color,
+    legendFontColor: 'transparent',
+    legendFontSize: 1,
+  }));
 
   const chartConfig = {
-    color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
+    color: () => 'transparent',
   };
 
   return (
     <View style={[styles.container, darkMode && styles.containerDark]}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <Icon name="chart-pie" size={22} color="#a855f7" />
-          <Text style={[styles.title, darkMode && styles.textDark]}>Today's Macros</Text>
-        </View>
-        {hasData && (
-          <Text style={[styles.subtitle, darkMode && styles.textSecondaryDark]}>
-            {Math.round(calFromMacros)} kcal from macros
-          </Text>
-        )}
+        <Icon name="chart-pie" size={20} color="#a855f7" />
+        <Text style={[styles.title, darkMode && styles.textDark]}>Today's Macros</Text>
       </View>
 
-      {/* Chart or Empty State */}
+      {/* ── Pie Chart — colors only ── */}
       {hasData ? (
         <View style={styles.chartWrapper}>
           <PieChart
@@ -63,45 +54,88 @@ const MacroPieChart = ({ dailyLog, darkMode }) => {
             chartConfig={chartConfig}
             accessor="value"
             backgroundColor="transparent"
-            paddingLeft="10"
+            paddingLeft={String(Math.round(chartWidth / 4))}
             hasLegend={false}
-            absolute
           />
         </View>
       ) : (
         <View style={styles.emptyState}>
           <Icon name="chart-pie-outline" size={52} color={darkMode ? '#4b5563' : '#d1d5db'} />
-          <Text style={[styles.emptyTitle, darkMode && styles.textSecondaryDark]}>No food logged yet</Text>
+          <Text style={[styles.emptyTitle, darkMode && styles.textSecondaryDark]}>
+            No food logged yet
+          </Text>
           <Text style={[styles.emptySubtext, darkMode && styles.textSecondaryDark]}>
-            Add meals below to see your macro breakdown
+            Add meals to see your calorie breakdown
           </Text>
         </View>
       )}
 
-      {/* Macro Breakdown Chips */}
-      <View style={styles.breakdown}>
-        {MACRO_CONFIG.map((m) => {
-          const val = Math.round(dailyLog[m.key] || 0);
-          const pct = totalGrams > 0 ? ((val / totalGrams) * 100).toFixed(0) : 0;
+      {/* ── Macro Details Box ── */}
+      <View style={[styles.detailsBox, darkMode && styles.detailsBoxDark]}>
+        {/* Macro rows — grams breakdown */}
+        {macroCals.map((m, i) => {
+          const totalGrams = macroCals.reduce((s, x) => s + x.grams, 0);
+          const pct = totalGrams > 0
+            ? ((m.grams / totalGrams) * 100).toFixed(0)
+            : 0;
 
           return (
-            <View
-              key={m.key}
-              style={[styles.chip, { borderColor: m.color + '44' }, darkMode && styles.chipDark]}
-            >
-              <View style={[styles.chipDot, { backgroundColor: m.color }]} />
-              <View style={styles.chipInfo}>
-                <Text style={[styles.chipName, darkMode && styles.textSecondaryDark]}>{m.name}</Text>
-                <Text style={[styles.chipValue, { color: m.color }]}>
-                  {val}g
+            <View key={m.key}>
+              <View style={styles.macroRow}>
+                {/* Color dot + icon + name */}
+                <View style={styles.macroLeft}>
+                  <View style={[styles.colorDot, { backgroundColor: m.color }]} />
+                  <Icon name={m.icon} size={14} color={m.color} />
+                  <Text style={[styles.macroName, darkMode && styles.textSecondaryDark]}>
+                    {m.name}
+                  </Text>
+                </View>
+
+                {/* Grams */}
+                <Text style={[styles.macroGrams, darkMode && styles.textSecondaryDark]}>
+                  {m.grams}g
                 </Text>
-                {hasData && (
-                  <Text style={[styles.chipPct, darkMode && styles.textSecondaryDark]}>{pct}%</Text>
-                )}
+
+                {/* % badge */}
+                <View style={[styles.pctBadge, { backgroundColor: m.color + '22' }]}>
+                  <Text style={[styles.pctText, { color: m.color }]}>{pct}%</Text>
+                </View>
               </View>
+
+              {/* Bar */}
+              <View style={[styles.barTrack, darkMode && styles.barTrackDark]}>
+                <View
+                  style={[
+                    styles.barFill,
+                    { width: `${pct}%`, backgroundColor: m.color },
+                  ]}
+                />
+              </View>
+
+              <View style={[styles.rowDivider, darkMode && styles.dividerDark]} />
             </View>
           );
         })}
+
+        {/* Calories row */}
+        <View style={styles.macroRow}>
+          <View style={styles.macroLeft}>
+            <View style={[styles.colorDot, { backgroundColor: '#ef4444' }]} />
+            <Icon name="fire" size={14} color="#ef4444" />
+            <Text style={[styles.macroName, darkMode && styles.textSecondaryDark]}>
+              Calories
+            </Text>
+          </View>
+          <Text style={[styles.macroGrams, darkMode && styles.textSecondaryDark]}>
+            {totalCalFromMacros} kcal
+          </Text>
+          <View style={[styles.pctBadge, { backgroundColor: '#ef444422' }]}>
+            <Text style={[styles.pctText, { color: '#ef4444' }]}>total</Text>
+          </View>
+        </View>
+        <View style={[styles.barTrack, darkMode && styles.barTrackDark]}>
+          <View style={[styles.barFill, { width: hasData ? '100%' : '0%', backgroundColor: '#ef4444' }]} />
+        </View>
       </View>
     </View>
   );
@@ -121,31 +155,27 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
   },
   header: {
-    marginBottom: 16,
-  },
-  titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 4,
+    marginBottom: 16,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#111827',
   },
-  subtitle: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginLeft: 32,
-  },
   chartWrapper: {
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'center',
+    width: '100%',
+    marginBottom: 16,
+    overflow: 'hidden',
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: 32,
+    marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 15,
@@ -159,53 +189,116 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
   },
-  breakdown: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-    marginTop: 8,
-  },
-  chip: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+
+  // ── Details Box ──
+  detailsBox: {
     backgroundColor: '#f9fafb',
-    borderRadius: 12,
-    padding: 10,
-    borderWidth: 1.5,
-    gap: 8,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
-  chipDark: {
+  detailsBoxDark: {
     backgroundColor: '#262626',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
-  chipDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginTop: 3,
+  totalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
-  chipInfo: {
-    flex: 1,
+  totalLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  chipName: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#6b7280',
+  totalLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#374151',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
-    marginBottom: 2,
   },
-  chipValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
+  totalValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#111827',
   },
-  chipPct: {
-    fontSize: 10,
-    color: '#9ca3af',
-    marginTop: 1,
+  divider: {
+    height: 1,
+    backgroundColor: '#e5e7eb',
+    marginBottom: 12,
+  },
+  dividerDark: {
+    backgroundColor: 'rgba(255,255,255,0.07)',
+  },
+  macroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  macroLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    flex: 1,
+  },
+  colorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  macroName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  macroGrams: {
+    fontSize: 12,
+    color: '#6b7280',
+    minWidth: 32,
+    textAlign: 'right',
+  },
+  macroCals: {
+    fontSize: 13,
+    fontWeight: '700',
+    minWidth: 64,
+    textAlign: 'right',
+  },
+  pctBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    minWidth: 38,
+    alignItems: 'center',
+  },
+  pctText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  barTrack: {
+    height: 4,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 10,
+  },
+  barTrackDark: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  barFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  rowDivider: {
+    height: 1,
+    backgroundColor: '#f3f4f6',
+    marginBottom: 10,
   },
   textDark: { color: '#fff' },
-  textSecondaryDark: { color: 'rgba(255,255,255,0.5)' },
+  textSecondaryDark: { color: 'rgba(255,255,255,0.55)' },
 });
 
 export default MacroPieChart;

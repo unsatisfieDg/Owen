@@ -31,13 +31,13 @@ const LoadingScreen = () => {
           Animated.timing(anim, {
             toValue: -10,
             duration: 350,
-            easing: Easing.out(Easing.quad),
+            easing: Easing.out(Easing.ease),
             useNativeDriver: true,
           }),
           Animated.timing(anim, {
             toValue: 0,
             duration: 350,
-            easing: Easing.in(Easing.quad),
+            easing: Easing.in(Easing.ease),
             useNativeDriver: true,
           }),
           Animated.delay(700 - delay),
@@ -60,7 +60,7 @@ const LoadingScreen = () => {
 
   return (
     <LinearGradient
-      colors={['#4f46e5', '#7c3aed', '#a855f7']}
+      colors={['#f43f5e', '#e11d48', '#9f1239']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}
@@ -83,8 +83,8 @@ const LoadingScreen = () => {
               style={[
                 styles.dot,
                 { transform: [{ translateY: dot }] },
-                i === 1 && { backgroundColor: '#c4b5fd' },
-                i === 2 && { backgroundColor: '#a78bfa' },
+                i === 1 && { backgroundColor: '#fda4af' },
+                i === 2 && { backgroundColor: '#fb7185' },
               ]}
             />
           ))}
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#e0e7ff',
+    backgroundColor: '#ffe4e6',
   },
   loadingText: {
     fontSize: 13,

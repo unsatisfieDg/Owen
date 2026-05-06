@@ -11,10 +11,10 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const MACRO_DOTS = [
-  { key: 'calories', label: 'cal',  color: '#f59e0b' },
+  { key: 'calories', label: 'cal',  color: '#ef4444' },
   { key: 'protein',  label: 'P',    color: '#6366f1' },
   { key: 'carbs',    label: 'C',    color: '#10b981' },
-  { key: 'fats',     label: 'F',    color: '#ef4444' },
+  { key: 'fats',     label: 'F',    color: '#f59e0b' },
 ];
 
 const FoodLogList = ({ foods, onRemove, darkMode }) => {

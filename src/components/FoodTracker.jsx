@@ -366,6 +366,30 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
 
       {/* Search Area - wrapped for absolute positioning */}
       <View style={styles.searchArea}>
+        {/* AI Assistant Banner */}
+        <TouchableOpacity 
+          style={styles.aiBannerContainer}
+          onPress={() => setShowAIAssistant(true)}
+        >
+          <LinearGradient
+            colors={['#e11d48', '#9f1239']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.aiBannerGradient}
+          >
+            <View style={styles.aiBannerContent}>
+              <View style={styles.aiBannerIcon}>
+                <Icon name="robot-outline" size={24} color="#e11d48" />
+              </View>
+              <View style={styles.aiBannerTextContainer}>
+                <Text style={styles.aiBannerTitle}>✨ Ask MacroGenius AI</Text>
+                <Text style={styles.aiBannerSubtitle}>"I just had 2 eggs and a slice of toast"</Text>
+              </View>
+              <Icon name="chevron-right" size={20} color="rgba(255,255,255,0.7)" />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
         {/* Search Bar */}
         <View style={styles.searchContainer} collapsable={false} onStartShouldSetResponder={() => true}>
         <View style={styles.searchInputContainer}>
@@ -405,53 +429,42 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity 
-          style={styles.searchButton} 
-          onPress={() => {
-            Keyboard.dismiss();
-            handleSearch();
-          }}
-          disabled={isSearching}
-        >
-          <LinearGradient
-            colors={isSearching ? ['#d1d5db', '#9ca3af'] : ['#10b981', '#059669']}
-            style={styles.searchButtonGradient}
-          >
-            {isSearching ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <Icon name="plus" size={24} color="#fff" />
-            )}
-          </LinearGradient>
-        </TouchableOpacity>
-        
-        {/* Barcode Scanner Button - Only show if available */}
-        {BarCodeScanner && (
+        <View style={styles.actionButtonsContainer}>
           <TouchableOpacity 
-            style={styles.barcodeButton} 
-            onPress={handleOpenScanner}
+            style={styles.searchButton} 
+            onPress={() => {
+              Keyboard.dismiss();
+              handleSearch();
+            }}
+            disabled={isSearching}
           >
             <LinearGradient
-              colors={['#6366f1', '#4f46e5']}
+              colors={isSearching ? ['#d1d5db', '#9ca3af'] : ['#10b981', '#059669']}
               style={styles.searchButtonGradient}
             >
-              <Icon name="barcode-scan" size={24} color="#fff" />
+              {isSearching ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Icon name="plus" size={24} color="#fff" />
+              )}
             </LinearGradient>
           </TouchableOpacity>
-        )}
-
-        {/* AI Assistant Button */}
-        <TouchableOpacity 
-          style={styles.barcodeButton} 
-          onPress={() => setShowAIAssistant(true)}
-        >
-          <LinearGradient
-            colors={['#8b5cf6', '#6d28d9']}
-            style={styles.searchButtonGradient}
-          >
-            <Icon name="robot" size={24} color="#fff" />
-          </LinearGradient>
-        </TouchableOpacity>
+          
+          {/* Barcode Scanner Button - Only show if available */}
+          {BarCodeScanner && (
+            <TouchableOpacity 
+              style={styles.searchButton} 
+              onPress={handleOpenScanner}
+            >
+              <LinearGradient
+                colors={['#6366f1', '#4f46e5']}
+                style={styles.searchButtonGradient}
+              >
+                <Icon name="barcode-scan" size={24} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
         {/* Live Search Results */}
@@ -811,6 +824,46 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginBottom: 12,
   },
+  aiBannerContainer: {
+    marginBottom: 12,
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#e11d48',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  aiBannerGradient: {
+    padding: 14,
+  },
+  aiBannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  aiBannerIcon: {
+    backgroundColor: '#fff',
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiBannerTextContainer: {
+    flex: 1,
+  },
+  aiBannerTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  aiBannerSubtitle: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 11,
+    fontStyle: 'italic',
+  },
   searchContainer: {
     flexDirection: 'row',
     gap: 8,
@@ -829,6 +882,10 @@ const styles = StyleSheet.create({
     height: 48,
     fontSize: 14,
     color: '#1f2937',
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    gap: 4,
   },
   searchButton: {
     width: 48,

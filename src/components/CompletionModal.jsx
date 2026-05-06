@@ -63,13 +63,13 @@ const CompletionModal = ({ visible, onClose, streak, stats }) => {
           Animated.timing(trophyBounce, {
             toValue: -12,
             duration: 500,
-            easing: Easing.out(Easing.quad),
+            easing: Easing.out(Easing.ease),
             useNativeDriver: true,
           }),
           Animated.timing(trophyBounce, {
             toValue: 0,
             duration: 500,
-            easing: Easing.in(Easing.quad),
+            easing: Easing.in(Easing.ease),
             useNativeDriver: true,
           }),
         ])

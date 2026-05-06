@@ -11,10 +11,10 @@ const NutritionCards = ({ nutrition, dailyLog, darkMode }) => {
       name: 'Calories',
       current: Math.round(dailyLog.calories || 0),
       target: nutrition.tdee || 0,
-      color: '#f59e0b',
-      bg: '#fffbeb',
-      bgDark: 'rgba(245,158,11,0.12)',
-      icon: 'lightning-bolt',
+      color: '#ef4444',
+      bg: '#fff5f5',
+      bgDark: 'rgba(239,68,68,0.12)',
+      icon: 'fire',
       unit: 'kcal',
     },
     {
@@ -40,10 +40,10 @@ const NutritionCards = ({ nutrition, dailyLog, darkMode }) => {
     {
       name: 'Fats',
       current: Math.round(dailyLog.fats || 0),
-      target: nutrition.fats || 0,
-      color: '#ef4444',
-      bg: '#fef2f2',
-      bgDark: 'rgba(239,68,68,0.12)',
+      target: nutrition.fats || Math.round((nutrition.tdee * 0.25) / 9) || 0,
+      color: '#f59e0b',
+      bg: '#fffbeb',
+      bgDark: 'rgba(245,158,11,0.12)',
       icon: 'oil',
       unit: 'g',
     },
@@ -55,9 +55,11 @@ const NutritionCards = ({ nutrition, dailyLog, darkMode }) => {
   };
 
   return (
-    <View style={styles.grid}>
-      {progressData.map((item) => {
-        const percentage = getPercentage(item.current, item.target);
+    <View style={styles.container}>
+      <Text style={[styles.sectionTitle, darkMode && styles.textDark]}>Today's Progress</Text>
+      <View style={styles.grid}>
+        {progressData.map((item) => {
+          const percentage = getPercentage(item.current, item.target);
         const remaining = Math.max(0, item.target - item.current);
         const isComplete = percentage >= 100;
 
@@ -76,11 +78,6 @@ const NutritionCards = ({ nutrition, dailyLog, darkMode }) => {
                 <Icon name={item.icon} size={18} color={item.color} />
               </View>
               <Text style={[styles.name, darkMode && styles.textSecondaryDark]}>{item.name}</Text>
-              <View style={[styles.percentBadge, { backgroundColor: item.color + (isComplete ? 'ff' : '22') }]}>
-                <Text style={[styles.percentText, { color: isComplete ? '#fff' : item.color }]}>
-                  {percentage}%
-                </Text>
-              </View>
             </View>
 
             {/* Values */}
@@ -89,9 +86,17 @@ const NutritionCards = ({ nutrition, dailyLog, darkMode }) => {
               <Text style={[styles.unit, darkMode && styles.textSecondaryDark]}> {item.unit}</Text>
             </Text>
 
-            <Text style={[styles.targetText, darkMode && styles.textSecondaryDark]}>
-              {isComplete ? '✓ Goal reached' : `${remaining.toLocaleString()} ${item.unit} left`}
-            </Text>
+            {/* Target and Percentage Row */}
+            <View style={styles.targetRow}>
+              <Text style={[styles.targetText, darkMode && styles.textSecondaryDark]}>
+                {isComplete ? '✓ Goal reached' : `${remaining.toLocaleString()} ${item.unit} left`}
+              </Text>
+              <View style={[styles.percentBadge, { backgroundColor: item.color + (isComplete ? 'ff' : '22') }]}>
+                <Text style={[styles.percentText, { color: isComplete ? '#fff' : item.color }]}>
+                  {percentage}%
+                </Text>
+              </View>
+            </View>
 
             {/* Progress Bar */}
             <View style={[styles.progressTrack, darkMode && styles.progressTrackDark]}>
@@ -113,19 +118,34 @@ const NutritionCards = ({ nutrition, dailyLog, darkMode }) => {
           </View>
         );
       })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#374151',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+    marginLeft: 4,
+  },
+  textDark: { color: '#fff' },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: isSmallScreen ? 8 : 10,
-    marginVertical: isSmallScreen ? 12 : 16,
+    justifyContent: 'space-between',
+    rowGap: isSmallScreen ? 12 : 14,
+    marginVertical: 12,
   },
   card: {
-    width: (SCREEN_WIDTH - (isSmallScreen ? 72 : 80)) / 2,
+    width: '48%',
     borderRadius: 16,
     padding: isSmallScreen ? 12 : 14,
     borderWidth: 1,
@@ -174,10 +194,15 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: '#6b7280',
   },
+  targetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
   targetText: {
     fontSize: 10,
     color: '#6b7280',
-    marginBottom: 8,
   },
   progressTrack: {
     height: 6,

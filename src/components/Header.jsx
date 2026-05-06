@@ -94,11 +94,11 @@ const styles = StyleSheet.create({
   brandName: {
     fontSize: isSmallScreen ? 15 : 17,
     fontWeight: '800',
-    color: '#6366f1',
+    color: '#e11d48',
     letterSpacing: -0.3,
   },
   brandNameDark: {
-    color: '#818cf8',
+    color: '#fda4af',
   },
   greeting: {
     fontSize: isSmallScreen ? 11 : 12,
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   profileButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: '#e11d48',
   },
   lightButton: {
     backgroundColor: '#f3f4f6',
