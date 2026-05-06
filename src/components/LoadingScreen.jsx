@@ -1,106 +1,145 @@
-import React from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Easing,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import FloatingMascot from './FloatingMascot';
 
 const LoadingScreen = () => {
-  const pulseAnim = new Animated.Value(1);
+  const dot1 = useRef(new Animated.Value(0)).current;
+  const dot2 = useRef(new Animated.Value(0)).current;
+  const dot3 = useRef(new Animated.Value(0)).current;
+  const fadeIn = useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.2,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
+  useEffect(() => {
+    // Fade in
+    Animated.timing(fadeIn, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+
+    // Bouncing dots staggered
+    const animateDot = (anim, delay) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(anim, {
+            toValue: -10,
+            duration: 350,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim, {
+            toValue: 0,
+            duration: 350,
+            easing: Easing.in(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.delay(700 - delay),
+        ])
+      );
+
+    const a1 = animateDot(dot1, 0);
+    const a2 = animateDot(dot2, 150);
+    const a3 = animateDot(dot3, 300);
+    a1.start();
+    a2.start();
+    a3.start();
+
+    return () => {
+      a1.stop();
+      a2.stop();
+      a3.stop();
+    };
   }, []);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        {/* Animated Logo */}
-        <View style={styles.logoContainer}>
-          <LinearGradient
-            colors={['#6366f1', '#8b5cf6', '#a855f7']}
-            style={styles.logoGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-              <Icon name="dumbbell" size={60} color="#fff" />
-            </Animated.View>
-          </LinearGradient>
+    <LinearGradient
+      colors={['#4f46e5', '#7c3aed', '#a855f7']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.container}
+    >
+      <Animated.View style={[styles.content, { opacity: fadeIn }]}>
+        {/* Mascot */}
+        <View style={styles.mascotWrapper}>
+          <FloatingMascot size={110} />
         </View>
 
-        {/* App Name */}
+        {/* Brand */}
         <Text style={styles.appName}>MacroGenius</Text>
+        <Text style={styles.tagline}>Your AI nutrition companion</Text>
 
-        {/* Tagline */}
-        <Text style={styles.tagline}>Track Your Nutrition</Text>
-
-        {/* Loading Dots */}
-        <View style={styles.dotsContainer}>
-          <View style={[styles.dot, { backgroundColor: '#6366f1' }]} />
-          <View style={[styles.dot, { backgroundColor: '#a855f7' }]} />
-          <View style={[styles.dot, { backgroundColor: '#6366f1' }]} />
+        {/* Bouncing dots */}
+        <View style={styles.dotsRow}>
+          {[dot1, dot2, dot3].map((dot, i) => (
+            <Animated.View
+              key={i}
+              style={[
+                styles.dot,
+                { transform: [{ translateY: dot }] },
+                i === 1 && { backgroundColor: '#c4b5fd' },
+                i === 2 && { backgroundColor: '#a78bfa' },
+              ]}
+            />
+          ))}
         </View>
-      </View>
-    </View>
+
+        <Text style={styles.loadingText}>Loading your data...</Text>
+      </Animated.View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
     alignItems: 'center',
     justifyContent: 'center',
   },
   content: {
     alignItems: 'center',
   },
-  logoContainer: {
-    marginBottom: 32,
-  },
-  logoGradient: {
-    width: 120,
-    height: 120,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 10,
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-  },
-  appName: {
-    fontSize: 42,
-    fontWeight: 'bold',
-    color: '#6366f1',
+  mascotWrapper: {
     marginBottom: 8,
   },
-  tagline: {
-    fontSize: 18,
-    color: '#6b7280',
-    marginBottom: 32,
+  appName: {
+    fontSize: 38,
+    fontWeight: '900',
+    color: '#fff',
+    letterSpacing: -1,
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
-  dotsContainer: {
+  tagline: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.75)',
+    marginTop: 4,
+    marginBottom: 36,
+    fontWeight: '500',
+  },
+  dotsRow: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 12,
   },
   dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#e0e7ff',
+  },
+  loadingText: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.6)',
+    fontWeight: '500',
   },
 });
 

@@ -2,38 +2,112 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View, Image } from 'react-native';
 
 const FloatingMascot = ({ size = 80 }) => {
-  const floatingAnim = useRef(new Animated.Value(0)).current;
+  const floatY   = useRef(new Animated.Value(0)).current;
+  const floatR   = useRef(new Animated.Value(0)).current;
+  const scaleIn  = useRef(new Animated.Value(0.85)).current;
 
   useEffect(() => {
-    // Create a continuous floating animation
-    const float = Animated.loop(
+    // Pop-in on mount
+    Animated.spring(scaleIn, {
+      toValue: 1,
+      tension: 80,
+      friction: 6,
+      useNativeDriver: true,
+    }).start();
+
+    // Gentle float up/down
+    const floatLoop = Animated.loop(
       Animated.sequence([
-        Animated.timing(floatingAnim, {
-          toValue: -15, // Move up by 15 pixels
-          duration: 1500,
-          easing: Easing.inOut(Easing.ease),
+        Animated.timing(floatY, {
+          toValue: -8,
+          duration: 1800,
+          easing: Easing.inOut(Easing.sine),
           useNativeDriver: true,
         }),
-        Animated.timing(floatingAnim, {
-          toValue: 0, // Move back down
-          duration: 1500,
-          easing: Easing.inOut(Easing.ease),
+        Animated.timing(floatY, {
+          toValue: 0,
+          duration: 1800,
+          easing: Easing.inOut(Easing.sine),
           useNativeDriver: true,
         }),
       ])
     );
-    
-    float.start();
-    
-    return () => float.stop();
-  }, [floatingAnim]);
+
+    // Subtle rotation rock
+    const rockLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatR, {
+          toValue: 1,
+          duration: 2200,
+          easing: Easing.inOut(Easing.sine),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatR, {
+          toValue: -1,
+          duration: 2200,
+          easing: Easing.inOut(Easing.sine),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatR, {
+          toValue: 0,
+          duration: 2200,
+          easing: Easing.inOut(Easing.sine),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    floatLoop.start();
+    rockLoop.start();
+
+    return () => {
+      floatLoop.stop();
+      rockLoop.stop();
+    };
+  }, []);
+
+  const rotate = floatR.interpolate({
+    inputRange: [-1, 1],
+    outputRange: ['-4deg', '4deg'],
+  });
 
   return (
     <View style={styles.container}>
-      <Animated.View style={{ transform: [{ translateY: floatingAnim }] }}>
-        <Image 
-          source={require('../../assets/genius_bot.png')} 
-          style={[styles.mascot, { width: size, height: size }]} 
+      {/* Shadow ellipse */}
+      <Animated.View
+        style={[
+          styles.shadow,
+          {
+            width: size * 0.65,
+            opacity: floatY.interpolate({
+              inputRange: [-8, 0],
+              outputRange: [0.3, 0.6],
+            }),
+            transform: [
+              {
+                scaleX: floatY.interpolate({
+                  inputRange: [-8, 0],
+                  outputRange: [0.85, 1],
+                }),
+              },
+            ],
+          },
+        ]}
+      />
+
+      {/* Mascot */}
+      <Animated.View
+        style={{
+          transform: [
+            { translateY: floatY },
+            { rotate },
+            { scale: scaleIn },
+          ],
+        }}
+      >
+        <Image
+          source={require('../../assets/genius_bot.png')}
+          style={{ width: size, height: size }}
           resizeMode="contain"
         />
       </Animated.View>
@@ -44,12 +118,16 @@ const FloatingMascot = ({ size = 80 }) => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
+    justifyContent: 'flex-end',
   },
-  mascot: {
-    borderRadius: 40, // Assuming circular background if any
-  }
+  shadow: {
+    height: 6,
+    backgroundColor: '#000',
+    borderRadius: 50,
+    position: 'absolute',
+    bottom: -4,
+    opacity: 0.5,
+  },
 });
 
 export default FloatingMascot;

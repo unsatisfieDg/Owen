@@ -9,26 +9,42 @@ const NutritionCards = ({ nutrition, dailyLog, darkMode }) => {
   const progressData = [
     {
       name: 'Calories',
-      current: dailyLog.calories || 0,
+      current: Math.round(dailyLog.calories || 0),
       target: nutrition.tdee || 0,
-      color: '#8b5cf6',
+      color: '#f59e0b',
+      bg: '#fffbeb',
+      bgDark: 'rgba(245,158,11,0.12)',
       icon: 'lightning-bolt',
       unit: 'kcal',
     },
     {
       name: 'Protein',
-      current: dailyLog.protein || 0,
+      current: Math.round(dailyLog.protein || 0),
       target: nutrition.protein || 0,
-      color: '#3b82f6',
+      color: '#6366f1',
+      bg: '#eef2ff',
+      bgDark: 'rgba(99,102,241,0.12)',
       icon: 'dumbbell',
       unit: 'g',
     },
     {
       name: 'Carbs',
-      current: dailyLog.carbs || 0,
+      current: Math.round(dailyLog.carbs || 0),
       target: nutrition.carbs || 0,
       color: '#10b981',
+      bg: '#ecfdf5',
+      bgDark: 'rgba(16,185,129,0.12)',
       icon: 'food-apple',
+      unit: 'g',
+    },
+    {
+      name: 'Fats',
+      current: Math.round(dailyLog.fats || 0),
+      target: nutrition.fats || 0,
+      color: '#ef4444',
+      bg: '#fef2f2',
+      bgDark: 'rgba(239,68,68,0.12)',
+      icon: 'oil',
       unit: 'g',
     },
   ];
@@ -39,45 +55,61 @@ const NutritionCards = ({ nutrition, dailyLog, darkMode }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.grid}>
       {progressData.map((item) => {
         const percentage = getPercentage(item.current, item.target);
         const remaining = Math.max(0, item.target - item.current);
+        const isComplete = percentage >= 100;
 
         return (
-          <View key={item.name} style={[styles.card, darkMode && styles.cardDark]}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Icon name={item.icon} size={20} color={item.color} />
-              <Text style={[styles.name, darkMode && styles.textDark]}>{item.name}</Text>
-              <View style={[styles.badge, { backgroundColor: item.color + '20' }]}>
-                <Text style={[styles.badgeText, { color: item.color }]}>
+          <View
+            key={item.name}
+            style={[
+              styles.card,
+              { backgroundColor: darkMode ? item.bgDark : item.bg },
+              darkMode && styles.cardDark,
+            ]}
+          >
+            {/* Icon + Name Row */}
+            <View style={styles.cardHeader}>
+              <View style={[styles.iconBadge, { backgroundColor: item.color + '22' }]}>
+                <Icon name={item.icon} size={18} color={item.color} />
+              </View>
+              <Text style={[styles.name, darkMode && styles.textSecondaryDark]}>{item.name}</Text>
+              <View style={[styles.percentBadge, { backgroundColor: item.color + (isComplete ? 'ff' : '22') }]}>
+                <Text style={[styles.percentText, { color: isComplete ? '#fff' : item.color }]}>
                   {percentage}%
                 </Text>
               </View>
             </View>
 
             {/* Values */}
-            <View style={styles.values}>
-              <Text style={[styles.current, darkMode && styles.textDark]}>{item.current.toLocaleString()}</Text>
-              <Text style={[styles.target, darkMode && styles.textSecondaryDark]}>
-                / {item.target.toLocaleString()} {item.unit}
-              </Text>
-            </View>
+            <Text style={[styles.currentValue, { color: item.color }]}>
+              {item.current.toLocaleString()}
+              <Text style={[styles.unit, darkMode && styles.textSecondaryDark]}> {item.unit}</Text>
+            </Text>
 
-            <Text style={[styles.remaining, darkMode && styles.textSecondaryDark]}>
-              {percentage >= 100 ? '✓ Goal achieved!' : `${remaining.toLocaleString()} ${item.unit} remaining`}
+            <Text style={[styles.targetText, darkMode && styles.textSecondaryDark]}>
+              {isComplete ? '✓ Goal reached' : `${remaining.toLocaleString()} ${item.unit} left`}
             </Text>
 
             {/* Progress Bar */}
-            <View style={[styles.progressBarContainer, darkMode && styles.progressBarContainerDark]}>
+            <View style={[styles.progressTrack, darkMode && styles.progressTrackDark]}>
               <View
                 style={[
-                  styles.progressBar,
-                  { width: `${percentage}%`, backgroundColor: item.color },
+                  styles.progressFill,
+                  {
+                    width: `${percentage}%`,
+                    backgroundColor: item.color,
+                  },
                 ]}
               />
             </View>
+
+            {/* Target */}
+            <Text style={[styles.targetLabel, darkMode && styles.textSecondaryDark]}>
+              Goal: {item.target.toLocaleString()} {item.unit}
+            </Text>
           </View>
         );
       })}
@@ -86,82 +118,90 @@ const NutritionCards = ({ nutrition, dailyLog, darkMode }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: SCREEN_WIDTH < 600 ? 'column' : 'row',
-    gap: isSmallScreen ? 8 : 12,
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: isSmallScreen ? 8 : 10,
     marginVertical: isSmallScreen ? 12 : 16,
   },
   card: {
-    flex: SCREEN_WIDTH < 600 ? undefined : 1,
-    backgroundColor: '#fff',
-    borderRadius: isSmallScreen ? 12 : 16,
-    padding: isSmallScreen ? 12 : 16,
+    width: (SCREEN_WIDTH - (isSmallScreen ? 72 : 80)) / 2,
+    borderRadius: 16,
+    padding: isSmallScreen ? 12 : 14,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: 'rgba(0,0,0,0.04)',
   },
   cardDark: {
-    backgroundColor: '#262626',
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(255,255,255,0.06)',
   },
-  header: {
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
+    gap: 6,
+  },
+  iconBadge: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   name: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
     color: '#374151',
-    marginLeft: 8,
     flex: 1,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  badge: {
-    paddingHorizontal: 8,
+  percentBadge: {
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: 8,
   },
-  badgeText: {
+  percentText: {
     fontSize: 10,
     fontWeight: 'bold',
   },
-  values: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 4,
-  },
-  current: {
-    fontSize: 24,
+  currentValue: {
+    fontSize: isSmallScreen ? 22 : 26,
     fontWeight: 'bold',
-    color: '#111827',
+    marginBottom: 2,
   },
-  target: {
+  unit: {
     fontSize: 12,
+    fontWeight: '400',
     color: '#6b7280',
-    marginLeft: 4,
   },
-  remaining: {
+  targetText: {
     fontSize: 10,
     color: '#6b7280',
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  progressTrack: {
+    height: 6,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 6,
+  },
+  progressTrackDark: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  targetLabel: {
+    fontSize: 10,
+    color: '#9ca3af',
+  },
+  textSecondaryDark: {
+    color: 'rgba(255,255,255,0.5)',
   },
   textDark: {
     color: '#fff',
-  },
-  textSecondaryDark: {
-    color: 'rgba(255,255,255,0.7)',
-  },
-  progressBarContainer: {
-    height: 8,
-    backgroundColor: '#e5e7eb',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressBarContainerDark: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: 4,
   },
 });
 

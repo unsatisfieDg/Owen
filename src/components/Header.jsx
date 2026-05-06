@@ -14,35 +14,34 @@ const Header = ({ darkMode, setDarkMode, user, userName, greeting, onProfileClic
         {/* Logo + Title + Greeting */}
         <View style={styles.leftSection}>
           <View style={styles.mascotContainer}>
-            <FloatingMascot size={56} />
+            <FloatingMascot size={50} />
           </View>
-          
+
           <View style={styles.titleContainer}>
-            <Text style={[styles.greeting, darkMode && styles.greetingDark]}>
-                  {greeting}, {userName || 'there'}!
+            <Text style={[styles.brandName, darkMode && styles.brandNameDark]}>MacroGenius</Text>
+            <Text style={[styles.greeting, darkMode && styles.greetingDark]} numberOfLines={1}>
+              {greeting}, {userName || 'there'}!
             </Text>
           </View>
         </View>
 
         {/* Action Buttons */}
         <View style={styles.buttonsContainer}>
-              {/* My Stats Button */}
           <TouchableOpacity
             style={[styles.button, styles.profileButton]}
             onPress={onProfileClick}
           >
             <Icon name="account" size={20} color="#fff" />
           </TouchableOpacity>
-              
-              {/* Dark Mode Toggle */}
+
           <TouchableOpacity
             style={[styles.button, darkMode ? styles.darkButton : styles.lightButton]}
             onPress={() => setDarkMode(!darkMode)}
           >
-            <Icon 
-              name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'} 
-              size={20} 
-              color={darkMode ? '#fbbf24' : '#6b7280'} 
+            <Icon
+              name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'}
+              size={20}
+              color={darkMode ? '#fbbf24' : '#6b7280'}
             />
           </TouchableOpacity>
         </View>
@@ -86,27 +85,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mascotContainer: {
-    marginRight: 12,
-    marginTop: -8, // slight adjustment to make it pop out
+    marginRight: 10,
+    marginTop: -4,
   },
   titleContainer: {
     flex: 1,
   },
-  title: {
-    fontSize: isSmallScreen ? 16 : 20,
-    fontWeight: 'bold',
+  brandName: {
+    fontSize: isSmallScreen ? 15 : 17,
+    fontWeight: '800',
     color: '#6366f1',
+    letterSpacing: -0.3,
   },
-  titleDark: {
-    color: '#8b5cf6',
+  brandNameDark: {
+    color: '#818cf8',
   },
   greeting: {
-    fontSize: isSmallScreen ? 12 : 14,
-    fontWeight: '600',
-    color: '#374151',
+    fontSize: isSmallScreen ? 11 : 12,
+    fontWeight: '500',
+    color: '#6b7280',
+    marginTop: 1,
   },
   greetingDark: {
-    color: '#d1d5db',
+    color: '#9ca3af',
   },
   buttonsContainer: {
     flexDirection: 'row',

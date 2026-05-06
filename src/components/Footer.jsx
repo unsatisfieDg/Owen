@@ -1,41 +1,54 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Footer = ({ darkMode }) => {
   const currentYear = new Date().getFullYear();
 
-  const openGitHub = () => {
-    Linking.openURL('https://github.com/unsatisfieDg');
-  };
-
   return (
     <View style={[styles.container, darkMode && styles.containerDark]}>
-      {/* Brand Section */}
-      <View style={styles.brandSection}>
-        <View style={styles.brandHeader}>
-          <View style={styles.iconContainer}>
-            <Icon name="heart" size={20} color="#fff" />
-          </View>
-          <Text style={[styles.brandTitle, darkMode && styles.textDark]}>MacroGenius</Text>
+      {/* Brand row */}
+      <View style={styles.brandRow}>
+        <LinearGradient
+          colors={['#6366f1', '#a855f7']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.iconBox}
+        >
+          <Icon name="lightning-bolt" size={16} color="#fff" />
+        </LinearGradient>
+        <View style={styles.brandText}>
+          <Text style={[styles.brandName, darkMode && styles.textDark]}>MacroGenius</Text>
+          <Text style={[styles.brandTagline, darkMode && styles.textSecondaryDark]}>
+            Offline-first nutrition tracking
+          </Text>
         </View>
-        <Text style={[styles.brandDescription, darkMode && styles.textSecondaryDark]}>
-          Track your nutrition to achieve your health and fitness goals.
-        </Text>
+        <TouchableOpacity
+          style={[styles.githubBtn, darkMode && styles.githubBtnDark]}
+          onPress={() => Linking.openURL('https://github.com/unsatisfieDg')}
+        >
+          <Icon name="github" size={18} color={darkMode ? '#9ca3af' : '#6b7280'} />
+        </TouchableOpacity>
       </View>
 
-      {/* Connect Section */}
-      <TouchableOpacity style={[styles.githubButton, darkMode && styles.githubButtonDark]} onPress={openGitHub}>
-        <Icon name="github" size={24} color="#6366f1" />
-      </TouchableOpacity>
+      {/* Divider */}
+      <View style={[styles.divider, darkMode && styles.dividerDark]} />
 
       {/* Copyright */}
-      <View style={[styles.copyright, darkMode && styles.copyrightDark]}>
+      <View style={styles.copyrightRow}>
         <Text style={[styles.copyrightText, darkMode && styles.textSecondaryDark]}>
-          © {currentYear} MacroGenius. Made with{' '}
+          © {currentYear} MacroGenius
         </Text>
-        <Icon name="heart" size={14} color="#ef4444" />
-        <Text style={[styles.copyrightText, darkMode && styles.textSecondaryDark]}> for your health.</Text>
+        <View style={styles.madewith}>
+          <Text style={[styles.copyrightText, darkMode && styles.textSecondaryDark]}>
+            Made with{' '}
+          </Text>
+          <Icon name="heart" size={12} color="#ef4444" />
+          <Text style={[styles.copyrightText, darkMode && styles.textSecondaryDark]}>
+            {' '}for your health
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -44,76 +57,79 @@ const Footer = ({ darkMode }) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    marginTop: 48,
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 16,
     borderWidth: 1,
     borderColor: '#e5e7eb',
   },
   containerDark: {
     backgroundColor: '#1a1a1a',
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(255,255,255,0.07)',
   },
-  brandSection: {
-    marginBottom: 24,
-  },
-  brandHeader: {
+  brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    gap: 12,
+    marginBottom: 16,
   },
-  iconContainer: {
-    backgroundColor: '#6366f1',
+  iconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandText: {
+    flex: 1,
+  },
+  brandName: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+    letterSpacing: -0.3,
+  },
+  brandTagline: {
+    fontSize: 11,
+    color: '#9ca3af',
+    marginTop: 1,
+  },
+  githubBtn: {
     width: 36,
     height: 36,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-  brandTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
-  },
-  textDark: {
-    color: '#fff',
-  },
-  brandDescription: {
-    fontSize: 14,
-    color: '#6b7280',
-    lineHeight: 20,
-  },
-  textSecondaryDark: {
-    color: 'rgba(255,255,255,0.7)',
-  },
-  githubButton: {
-    width: 48,
-    height: 48,
+    borderRadius: 10,
     backgroundColor: '#f3f4f6',
-    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
   },
-  githubButtonDark: {
+  githubBtnDark: {
     backgroundColor: '#262626',
   },
-  copyright: {
+  divider: {
+    height: 1,
+    backgroundColor: '#f3f4f6',
+    marginBottom: 14,
+  },
+  dividerDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  copyrightRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  madewith: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-  copyrightDark: {
-    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   copyrightText: {
-    fontSize: 12,
-    color: '#6b7280',
+    fontSize: 11,
+    color: '#9ca3af',
   },
+  textDark: { color: '#fff' },
+  textSecondaryDark: { color: 'rgba(255,255,255,0.4)' },
 });
 
 export default Footer;

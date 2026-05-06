@@ -518,7 +518,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#d1d5db',
     borderRadius: 12,
-    overflow: 'hidden',
     backgroundColor: '#fff',
   },
   pickerWrapperDark: {
