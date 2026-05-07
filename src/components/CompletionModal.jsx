@@ -14,7 +14,7 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
-const CONFETTI_COLORS = ['#6366f1', '#a855f7', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+const CONFETTI_COLORS = ['#0d9488', '#5eead4', '#10b981', '#f59e0b', '#0f766e', '#2dd4bf'];
 const CONFETTI_COUNT = 24;
 
 const getMotivationalMessage = (streak) => {
@@ -156,7 +156,7 @@ const CompletionModal = ({ visible, onClose, streak, stats }) => {
         {/* Card */}
         <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
           <LinearGradient
-            colors={['#4f46e5', '#7c3aed', '#a855f7']}
+            colors={['#0d9488', '#0f766e', '#134e4a']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.gradient}
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   closeBtnText: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#6366f1',
+    color: '#0f766e',
   },
 });
 

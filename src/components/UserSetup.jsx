@@ -65,7 +65,7 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <LinearGradient
-        colors={['#f43f5e', '#e11d48', '#9f1239']}
+        colors={['#0d9488', '#0f766e', '#134e4a']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.background}
@@ -278,7 +278,7 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
             <View style={styles.navRow}>
               {step > 0 ? (
                 <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
-                  <Icon name="arrow-left" size={20} color="#e11d48" />
+                  <Icon name="arrow-left" size={20} color="#0f766e" />
                   <Text style={styles.backBtnText}>Back</Text>
                 </TouchableOpacity>
               ) : <View style={styles.backBtnPlaceholder} />}
@@ -289,7 +289,7 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
                 disabled={!valid}
               >
                 <LinearGradient
-                  colors={valid ? ['#e11d48', '#9f1239'] : ['#d1d5db', '#d1d5db']}
+                  colors={valid ? ['#0d9488', '#134e4a'] : ['#d1d5db', '#d1d5db']}
                   style={styles.nextGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -311,7 +311,7 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#e11d48',
+    backgroundColor: '#0f766e',
   },
   background: {
     position: 'absolute',
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
   },
   stepDotTextActive: {
-    color: '#e11d48',
+    color: '#0f766e',
   },
   stepLine: {
     width: 32,
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#e11d48',
+    color: '#0f766e',
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 11,
-    color: '#e11d48',
+    color: '#0d9488',
     marginTop: 4,
     fontWeight: '500',
   },
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
   backBtnText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#e11d48',
+    color: '#0f766e',
   },
   nextBtn: {
     flex: 1,

@@ -106,12 +106,12 @@ const UserProfile = ({
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <Icon name="arrow-left" size={24} color="#6366f1" />
+              <Icon name="arrow-left" size={24} color="#0f766e" />
             </TouchableOpacity>
             <Text style={[styles.title, darkMode && styles.titleDark]}>My Profile</Text>
             {!isEditing ? (
               <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.editButton}>
-                <Icon name="pencil" size={20} color="#6366f1" />
+                <Icon name="pencil" size={20} color="#0f766e" />
                 <Text style={styles.editButtonText}>Edit</Text>
               </TouchableOpacity>
             ) : (
@@ -123,7 +123,7 @@ const UserProfile = ({
 
           {/* User Info */}
           <View style={[styles.infoCard, darkMode && styles.infoCardDark]}>
-            <Icon name="account-circle" size={64} color="#e11d48" />
+            <Icon name="account-circle" size={64} color="#0f766e" />
             <Text style={styles.username}>{user.username}</Text>
             <Text style={[styles.name, darkMode && styles.nameDark]}>{userData.name}</Text>
           </View>
@@ -311,7 +311,7 @@ const UserProfile = ({
           {isEditing && (
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <LinearGradient
-                colors={['#6366f1', '#a855f7']}
+                colors={['#0d9488', '#134e4a']}
                 style={styles.saveGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   editButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#e11d48',
+    color: '#0f766e',
   },
   cancelButton: {
     padding: 4,
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#e11d48',
+    color: '#0f766e',
     marginTop: 12,
   },
   name: {
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#e11d48',
+    color: '#0f766e',
     marginBottom: 8,
   },
   labelDark: {
@@ -640,11 +640,11 @@ const styles = StyleSheet.create({
   progressValue: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#e11d48',
+    color: '#0f766e',
     marginBottom: 4,
   },
   progressValueDark: {
-    color: '#fda4af',
+    color: '#5eead4',
   },
   progressLabel: {
     fontSize: 12,

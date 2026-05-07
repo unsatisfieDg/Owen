@@ -11,7 +11,7 @@ const Footer = ({ darkMode }) => {
       {/* Brand row */}
       <View style={styles.brandRow}>
         <LinearGradient
-          colors={['#6366f1', '#a855f7']}
+          colors={['#0d9488', '#134e4a']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.iconBox}

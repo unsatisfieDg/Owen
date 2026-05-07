@@ -60,7 +60,7 @@ const LoadingScreen = () => {
 
   return (
     <LinearGradient
-      colors={['#f43f5e', '#e11d48', '#9f1239']}
+      colors={['#0d9488', '#0f766e', '#134e4a']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}
@@ -83,8 +83,8 @@ const LoadingScreen = () => {
               style={[
                 styles.dot,
                 { transform: [{ translateY: dot }] },
-                i === 1 && { backgroundColor: '#fda4af' },
-                i === 2 && { backgroundColor: '#fb7185' },
+                i === 1 && { backgroundColor: '#5eead4' },
+                i === 2 && { backgroundColor: '#2dd4bf' },
               ]}
             />
           ))}
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#ffe4e6',
+    backgroundColor: '#ccfbf1',
   },
   loadingText: {
     fontSize: 13,

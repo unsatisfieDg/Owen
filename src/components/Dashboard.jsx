@@ -8,6 +8,7 @@ import NutritionCards from './NutritionCards';
 import FoodTracker from './FoodTracker';
 import Footer from './Footer';
 import CompletionModal from './CompletionModal';
+import AIAssistantModal from './AIAssistantModal';
 import { useCompletionTracking } from '../hooks/useCompletionTracking';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -43,6 +44,7 @@ const Dashboard = ({
   } = useCompletionTracking(user?.id);
 
   const [completionChecked, setCompletionChecked] = useState(false);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
 
   // Check if macros are complete (Calories, Protein, Carbs, Fats)
   const checkMacrosComplete = useCallback(() => {
@@ -112,6 +114,9 @@ const Dashboard = ({
         userName={userData.name}
         greeting={getGreeting()}
         onProfileClick={() => navigation.navigate('Profile')}
+        onMascotPress={() => setShowAIAssistant(true)}
+        dailyLog={dailyLog}
+        nutrition={nutrition}
       />
 
       <ScrollView 
@@ -214,6 +219,23 @@ const Dashboard = ({
         onClose={handleCloseCompletionModal}
         streak={completionData.streak}
         stats={getCompletionStats()}
+      />
+
+      {/* AI Assistant Modal — triggered by tapping the mascot */}
+      <AIAssistantModal
+        visible={showAIAssistant}
+        onClose={() => setShowAIAssistant(false)}
+        onAddFood={(food) => {
+          setDailyLog(prev => ({
+            calories: prev.calories + food.calories,
+            protein:  prev.protein  + food.protein,
+            carbs:    prev.carbs    + food.carbs,
+            fats:     prev.fats     + food.fats,
+            foods:    [...prev.foods, food],
+          }));
+          setShowAIAssistant(false);
+        }}
+        user={user}
       />
     </SafeAreaView>
   );

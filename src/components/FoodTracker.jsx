@@ -372,14 +372,14 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
           onPress={() => setShowAIAssistant(true)}
         >
           <LinearGradient
-            colors={['#e11d48', '#9f1239']}
+            colors={['#0d9488', '#134e4a']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.aiBannerGradient}
           >
             <View style={styles.aiBannerContent}>
               <View style={styles.aiBannerIcon}>
-                <Icon name="robot-outline" size={24} color="#e11d48" />
+                <Icon name="robot-outline" size={24} color="#0f766e" />
               </View>
               <View style={styles.aiBannerTextContainer}>
                 <Text style={styles.aiBannerTitle}>✨ Ask MacroGenius AI</Text>
@@ -457,7 +457,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
               onPress={handleOpenScanner}
             >
               <LinearGradient
-                colors={['#6366f1', '#4f46e5']}
+                colors={['#0d9488', '#0f766e']}
                 style={styles.searchButtonGradient}
               >
                 <Icon name="barcode-scan" size={24} color="#fff" />
