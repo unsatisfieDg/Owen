@@ -11,12 +11,9 @@ Track your nutrition to achieve your health and fitness goals. This is a native 
 ### Nutrition Tracking
 - **Nutrition Calculator** - Calculates BMR, TDEE, and macros using the Mifflin-St Jeor equation.
 - **Goal-Based Planning** - Supports different goals like bulking, cutting, maintenance, or body recomposition.
-- **Progress Monitoring** - Track daily calorie, protein, and carb intake.
-- **Visual Breakdown** - A pie chart to see your macro distribution at a glance.
+- **Progress Monitoring** - Track daily calorie, protein, fats and carb intake.
 
 ### Food Tracking
-- **Food Database** - Includes over 200 items, with a focus on international and local Filipino cuisine.
-- **Search Integration** - Connects to the Edamam Food Database API for broader search results.
 - **Quick Logging** - Add foods quickly with custom serving sizes in grams.
 - **Offline Search** - Built-in SQLite database with over 9,000 items for use without an internet connection.
 - **Barcode Scanner** - Scan food labels to automatically retrieve and log nutrition data.
@@ -39,13 +36,6 @@ Track your nutrition to achieve your health and fitness goals. This is a native 
 - **Responsive Layout** - Designed to work across different screen sizes.
 - **Native Performance** - Uses native animations and feedback for a smooth feel.
 - **Simplified Navigation** - Easy to move between the tracker, profile, and settings.
-
-### Security
-- **Authentication** - A system for secure account creation and login.
-- **Data Protection** - Sensitive information is handled using secure encoding and hashing methods.
-- **Session Control** - Automatic management of user sessions for better security.
-
-## Quick Start
 
 ### Prerequisites
 - Node.js 16 or higher
@@ -84,23 +74,20 @@ owen/
 - **React Native** and **Expo** for the core mobile application.
 - **React Navigation** for moving between screens.
 - **AsyncStorage** and **SQLite** for local data storage.
-- **Edamam API** for external food data.
-
+- 
 ## Usage
 1. **Setup**: Enter your age, gender, height, weight, and activity level with Owen's help.
 2. **Logging**: Search for foods or scan barcodes to log your meals.
-3. **Review**: Check your progress bars and pie chart to stay on track.
+3. **Review**: Check your progress bars to stay on track.
 4. **Consistency**: Aim to hit your targets daily to build your streak.
 
 ## Roadmap
 - [x] Barcode scanner integration
-- [x] Custom food creation
 - [x] SQLite offline database (9,000+ items)
 - [x] Hybrid AI Assistant (On-device + Cloud)
 - [ ] Meal planning and recipe suggestions
 - [ ] Data export (CSV/PDF)
 - [ ] Social sharing features
-- [ ] Water intake tracking
 
 ## License
 This project is licensed under the MIT License.
