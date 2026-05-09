@@ -2,9 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   Animated,
+  StyleSheet,
   Easing,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import FloatingMascot from './FloatingMascot';
@@ -19,7 +20,7 @@ const LoadingScreen = () => {
     // Fade in
     Animated.timing(fadeIn, {
       toValue: 1,
-      duration: 600,
+      duration: 0,
       useNativeDriver: true,
     }).start();
 
@@ -68,12 +69,17 @@ const LoadingScreen = () => {
       <Animated.View style={[styles.content, { opacity: fadeIn }]}>
         {/* Mascot */}
         <View style={styles.mascotWrapper}>
-          <FloatingMascot size={110} />
+          <Image 
+            source={require('../../assets/owen_icon_white.png')} 
+            style={{ width: 120, height: 120 }} 
+            resizeMode="contain" 
+            fadeDuration={0}
+          />
         </View>
 
         {/* Brand */}
-        <Text style={styles.appName}>MacroGenius</Text>
-        <Text style={styles.tagline}>Your AI nutrition companion</Text>
+        <Text style={styles.appName}>Owen</Text>
+        <Text style={styles.tagline}>Your personal nutrition buddy</Text>
 
         {/* Bouncing dots */}
         <View style={styles.dotsRow}>

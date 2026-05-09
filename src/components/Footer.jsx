@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Image } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -16,12 +16,16 @@ const Footer = ({ darkMode }) => {
           end={{ x: 1, y: 1 }}
           style={styles.iconBox}
         >
-          <Icon name="lightning-bolt" size={16} color="#fff" />
+          <Image 
+            source={require('../../assets/owen_icon_white.png')} 
+            style={{ width: 22, height: 22 }} 
+            resizeMode="contain" 
+          />
         </LinearGradient>
         <View style={styles.brandText}>
-          <Text style={[styles.brandName, darkMode && styles.textDark]}>MacroGenius</Text>
+          <Text style={[styles.brandName, darkMode && styles.textDark]}>Owen</Text>
           <Text style={[styles.brandTagline, darkMode && styles.textSecondaryDark]}>
-            Offline-first nutrition tracking
+            Your personal nutrition buddy
           </Text>
         </View>
         <TouchableOpacity
@@ -38,7 +42,7 @@ const Footer = ({ darkMode }) => {
       {/* Copyright */}
       <View style={styles.copyrightRow}>
         <Text style={[styles.copyrightText, darkMode && styles.textSecondaryDark]}>
-          © {currentYear} MacroGenius
+          © {currentYear} Owen
         </Text>
         <View style={styles.madewith}>
           <Text style={[styles.copyrightText, darkMode && styles.textSecondaryDark]}>

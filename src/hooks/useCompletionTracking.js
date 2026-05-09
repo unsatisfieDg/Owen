@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 
-const COMPLETION_KEY = '@macroGenius_completion';
-const LAST_COMPLETION_KEY = '@macroGenius_lastCompletion';
+const COMPLETION_KEY = '@owen_completion';
+const LAST_COMPLETION_KEY = '@owen_lastCompletion';
 
 export const useCompletionTracking = (user) => {
   const [completionData, setCompletionData] = useState({

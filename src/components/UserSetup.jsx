@@ -9,10 +9,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   Dimensions,
+  Image,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Picker } from '@react-native-picker/picker';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import FloatingMascot from './FloatingMascot';
 
@@ -25,19 +27,42 @@ const STEPS = [
   { key: 'goals',   title: 'Your goals',  subtitle: 'What are you working towards?' },
 ];
 
+const GENDER_OPTIONS = [
+  { label: 'Male', value: 'male' },
+  { label: 'Female', value: 'female' },
+];
+
+const ACTIVITY_OPTIONS = [
+  { label: 'Sedentary (little/no exercise)', value: '1.2' },
+  { label: 'Light (1–3 days/week)', value: '1.375' },
+  { label: 'Moderate (3–5 days/week)', value: '1.55' },
+  { label: 'Active (6–7 days/week)', value: '1.725' },
+  { label: 'Very Active (athlete)', value: '1.9' },
+];
+
+const GOAL_OPTIONS = [
+  { label: 'Maintenance (Current Weight)', value: 'maintain' },
+  { label: 'Bulking (Muscle Gain)', value: 'muscle' },
+  { label: 'Cutting (Fat Loss)', value: 'loss' },
+  { label: 'Recomp (Lose Fat + Gain Muscle)', value: 'recomp' },
+  { label: 'Slow Fat Loss', value: 'slowloss' },
+];
+
 const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState(userData || {
-    name: '', age: '', height: '', weight: '', gender: '',
+    firstName: '', lastName: '', givenName: '', age: '', height: '', weight: '', gender: '',
     activityLevel: '', goal: '', targetWeight: ''
   });
+
+  const [activeSelect, setActiveSelect] = useState(null); // { field, title, options }
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const isStepValid = () => {
-    if (step === 0) return formData.name && formData.age && formData.gender;
+    if (step === 0) return formData.firstName && formData.lastName && formData.givenName && formData.age && formData.gender;
     if (step === 1) return formData.height && formData.weight && formData.activityLevel;
     if (step === 2) {
       const basicGoalSet = !!formData.goal;
@@ -82,8 +107,12 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
         >
           {/* Top: mascot + progress */}
           <View style={styles.topSection}>
-            <FloatingMascot size={90} />
-            <Text style={styles.appName}>MacroGenius</Text>
+            <Image 
+              source={require('../../assets/owen_icon_white.png')} 
+              style={{ width: 80, height: 80 }} 
+              resizeMode="contain" 
+            />
+            <Text style={styles.appName}>Owen</Text>
 
             {/* Step Progress */}
             <View style={styles.progressRow}>
@@ -118,18 +147,49 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
             {/* ─── Step 0: Identity ─── */}
             {step === 0 && (
               <>
+                <View style={styles.row}>
+                  <View style={[styles.field, styles.half]}>
+                    <Text style={styles.label}>First Name</Text>
+                    <View style={styles.inputRow}>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="First"
+                        placeholderTextColor="#9ca3af"
+                        value={formData.firstName || ''}
+                        onChangeText={(v) => handleInputChange('firstName', v)}
+                        autoCapitalize="words"
+                      />
+                    </View>
+                  </View>
+                  <View style={{ width: 12 }} />
+                  <View style={[styles.field, styles.half]}>
+                    <Text style={styles.label}>Last Name</Text>
+                    <View style={styles.inputRow}>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Last"
+                        placeholderTextColor="#9ca3af"
+                        value={formData.lastName || ''}
+                        onChangeText={(v) => handleInputChange('lastName', v)}
+                        autoCapitalize="words"
+                      />
+                    </View>
+                  </View>
+                </View>
+
                 <View style={styles.field}>
-                  <Text style={styles.label}>Full Name</Text>
+                  <Text style={styles.label}>Given Name (What Owen calls you)</Text>
                   <View style={styles.inputRow}>
-                    <Icon name="account" size={18} color="#9ca3af" style={styles.inputIcon} />
+                    <Icon name="face-recognition" size={18} color="#9ca3af" style={styles.inputIcon} />
                     <TextInput
                       style={styles.input}
-                      placeholder="Enter your name"
+                      placeholder="e.g. Buddy, Champ, or your first name"
                       placeholderTextColor="#9ca3af"
-                      value={formData.name || ''}
-                      onChangeText={(v) => handleInputChange('name', v)}
+                      value={formData.givenName || ''}
+                      onChangeText={(v) => handleInputChange('givenName', v)}
+                      autoCapitalize="words"
                     />
-                    {formData.name ? (
+                    {formData.givenName ? (
                       <Icon name="check-circle" size={18} color="#10b981" />
                     ) : null}
                   </View>
@@ -151,20 +211,23 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
                     </View>
                   </View>
 
+                  <View style={{ width: 12 }} />
+
                   <View style={[styles.field, styles.half]}>
                     <Text style={styles.label}>Gender</Text>
-                    <View style={styles.pickerWrapper}>
-                      <Picker
-                        mode="dialog"
-                        selectedValue={formData.gender}
-                        onValueChange={(v) => handleInputChange('gender', v)}
-                        style={styles.picker}
-                      >
-                        <Picker.Item label="Select..." value="" color="#9ca3af" />
-                        <Picker.Item label="Male" value="male" />
-                        <Picker.Item label="Female" value="female" />
-                      </Picker>
-                    </View>
+                    <TouchableOpacity 
+                      style={styles.pickerWrapper}
+                      onPress={() => setActiveSelect({
+                        field: 'gender',
+                        title: 'Select Gender',
+                        options: GENDER_OPTIONS
+                      })}
+                    >
+                      <Text style={[styles.pickerValue, !formData.gender && { color: '#9ca3af' }]}>
+                        {GENDER_OPTIONS.find(o => o.value === formData.gender)?.label || 'Select...'}
+                      </Text>
+                      <Icon name="chevron-down" size={20} color="#0f766e" />
+                    </TouchableOpacity>
                   </View>
                 </View>
               </>
@@ -189,6 +252,8 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
                     </View>
                   </View>
 
+                  <View style={{ width: 12 }} />
+
                   <View style={[styles.field, styles.half]}>
                     <Text style={styles.label}>Weight (kg)</Text>
                     <View style={styles.inputRow}>
@@ -207,21 +272,19 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
 
                 <View style={styles.field}>
                   <Text style={styles.label}>Activity Level</Text>
-                  <View style={styles.pickerWrapper}>
-                    <Picker
-                      mode="dialog"
-                      selectedValue={formData.activityLevel}
-                      onValueChange={(v) => handleInputChange('activityLevel', v)}
-                      style={styles.picker}
-                    >
-                      <Picker.Item label="Select activity level..." value="" color="#9ca3af" />
-                      <Picker.Item label="Sedentary (little/no exercise)" value="1.2" />
-                      <Picker.Item label="Light (1–3 days/week)" value="1.375" />
-                      <Picker.Item label="Moderate (3–5 days/week)" value="1.55" />
-                      <Picker.Item label="Active (6–7 days/week)" value="1.725" />
-                      <Picker.Item label="Very Active (athlete)" value="1.9" />
-                    </Picker>
-                  </View>
+                  <TouchableOpacity 
+                    style={styles.pickerWrapper}
+                    onPress={() => setActiveSelect({
+                      field: 'activityLevel',
+                      title: 'Select Activity Level',
+                      options: ACTIVITY_OPTIONS
+                    })}
+                  >
+                    <Text style={[styles.pickerValue, !formData.activityLevel && { color: '#9ca3af' }]}>
+                      {ACTIVITY_OPTIONS.find(o => o.value === formData.activityLevel)?.label || 'Select activity level...'}
+                    </Text>
+                    <Icon name="chevron-down" size={20} color="#0f766e" />
+                  </TouchableOpacity>
                 </View>
               </>
             )}
@@ -231,21 +294,19 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
               <>
                 <View style={styles.field}>
                   <Text style={styles.label}>Fitness Goal</Text>
-                  <View style={styles.pickerWrapper}>
-                    <Picker
-                      mode="dialog"
-                      selectedValue={formData.goal}
-                      onValueChange={(v) => handleInputChange('goal', v)}
-                      style={styles.picker}
-                    >
-                      <Picker.Item label="Select your goal..." value="" color="#9ca3af" />
-                      <Picker.Item label="Maintenance (Current Weight)" value="maintain" />
-                      <Picker.Item label="Bulking (Muscle Gain)" value="muscle" />
-                      <Picker.Item label="Cutting (Fat Loss)" value="loss" />
-                      <Picker.Item label="Recomp (Lose Fat + Gain Muscle)" value="recomp" />
-                      <Picker.Item label="Slow Fat Loss" value="slowloss" />
-                    </Picker>
-                  </View>
+                  <TouchableOpacity 
+                    style={styles.pickerWrapper}
+                    onPress={() => setActiveSelect({
+                      field: 'goal',
+                      title: 'Select Your Goal',
+                      options: GOAL_OPTIONS
+                    })}
+                  >
+                    <Text style={[styles.pickerValue, !formData.goal && { color: '#9ca3af' }]}>
+                      {GOAL_OPTIONS.find(o => o.value === formData.goal)?.label || 'Select your goal...'}
+                    </Text>
+                    <Icon name="chevron-down" size={20} color="#0f766e" />
+                  </TouchableOpacity>
                 </View>
 
                 {formData.goal && formData.goal !== 'maintain' && (
@@ -276,13 +337,6 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
 
             {/* Nav Buttons */}
             <View style={styles.navRow}>
-              {step > 0 ? (
-                <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
-                  <Icon name="arrow-left" size={20} color="#0f766e" />
-                  <Text style={styles.backBtnText}>Back</Text>
-                </TouchableOpacity>
-              ) : <View style={styles.backBtnPlaceholder} />}
-
               <TouchableOpacity
                 style={[styles.nextBtn, !valid && styles.nextBtnDisabled]}
                 onPress={handleNext}
@@ -300,10 +354,62 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
                   <Icon name={step === STEPS.length - 1 ? 'rocket-launch' : 'arrow-right'} size={18} color="#fff" />
                 </LinearGradient>
               </TouchableOpacity>
+
+              {step > 0 && (
+                <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
+                  <Text style={styles.backBtnText}>Go Back</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Selection Modal */}
+      <Modal
+        visible={!!activeSelect}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setActiveSelect(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{activeSelect?.title}</Text>
+              <TouchableOpacity onPress={() => setActiveSelect(null)}>
+                <Icon name="close" size={24} color="#111827" />
+              </TouchableOpacity>
+            </View>
+            
+            <FlatList
+              data={activeSelect?.options}
+              keyExtractor={(item) => item.value}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  style={[
+                    styles.optionItem,
+                    formData[activeSelect.field] === item.value && styles.optionItemActive
+                  ]}
+                  onPress={() => {
+                    handleInputChange(activeSelect.field, item.value);
+                    setActiveSelect(null);
+                  }}
+                >
+                  <Text style={[
+                    styles.optionLabel,
+                    formData[activeSelect.field] === item.value && styles.optionLabelActive
+                  ]}>
+                    {item.label}
+                  </Text>
+                  {formData[activeSelect.field] === item.value && (
+                    <Icon name="check" size={20} color="#0d9488" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -411,7 +517,6 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    gap: 12,
   },
   half: {
     flex: 1,
@@ -430,28 +535,80 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#e5e7eb',
     borderRadius: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 15,
     backgroundColor: '#f9fafb',
-    height: 50,
+    height: 54,
   },
   inputIcon: {
     marginRight: 8,
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     color: '#111827',
-    height: '100%',
+    paddingVertical: 10,
   },
   pickerWrapper: {
     borderWidth: 1.5,
     borderColor: '#e5e7eb',
     borderRadius: 12,
     backgroundColor: '#f9fafb',
+    height: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    justifyContent: 'space-between',
   },
-  picker: {
-    height: 50,
+  pickerValue: {
+    fontSize: 15,
     color: '#111827',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  optionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f9fafb',
+  },
+  optionItemActive: {
+    backgroundColor: '#f0fdfa',
+  },
+  optionLabel: {
+    fontSize: 16,
+    color: '#374151',
+  },
+  optionLabelActive: {
+    color: '#0d9488',
+    fontWeight: '700',
   },
   hint: {
     fontSize: 11,
@@ -460,28 +617,24 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   navRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     marginTop: 24,
-    gap: 12,
+    gap: 16,
   },
   backBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
     padding: 8,
   },
   backBtnPlaceholder: {
-    width: 70,
+    height: 0,
   },
   backBtnText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#0f766e',
+    color: '#6b7280',
+    textDecorationLine: 'underline',
   },
   nextBtn: {
-    flex: 1,
+    width: '100%',
     borderRadius: 14,
     overflow: 'hidden',
   },

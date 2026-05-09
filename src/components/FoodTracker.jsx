@@ -12,7 +12,8 @@ import {
   Dimensions,
   Keyboard,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
@@ -379,11 +380,16 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
           >
             <View style={styles.aiBannerContent}>
               <View style={styles.aiBannerIcon}>
-                <Icon name="robot-outline" size={24} color="#0f766e" />
+                <Image 
+                  source={require('../../assets/owen_icon_white.png')} 
+                  style={{ width: 32, height: 32 }} 
+                  resizeMode="contain" 
+                  fadeDuration={0}
+                />
               </View>
               <View style={styles.aiBannerTextContainer}>
-                <Text style={styles.aiBannerTitle}>✨ Ask MacroGenius AI</Text>
-                <Text style={styles.aiBannerSubtitle}>"I just had 2 eggs and a slice of toast"</Text>
+                <Text style={styles.aiBannerTitle}>Chat with Owen</Text>
+                <Text style={styles.aiBannerSubtitle}>"I'm ready to track your yummy meals!"</Text>
               </View>
               <Icon name="chevron-right" size={20} color="rgba(255,255,255,0.7)" />
             </View>
@@ -825,44 +831,48 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   aiBannerContainer: {
-    marginBottom: 12,
+    marginBottom: 14,
     borderRadius: 16,
     overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#e11d48',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    elevation: 4,
+    shadowColor: '#14b8a6',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
   aiBannerGradient: {
-    padding: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
   aiBannerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
   },
   aiBannerIcon: {
-    backgroundColor: '#fff',
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.25)',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 11,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   aiBannerTextContainer: {
     flex: 1,
   },
   aiBannerTitle: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 2,
+    fontSize: 15,
+    fontWeight: '800',
+    letterSpacing: 0.3,
   },
   aiBannerSubtitle: {
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: 11,
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 12,
     fontStyle: 'italic',
+    marginTop: 1,
   },
   searchContainer: {
     flexDirection: 'row',

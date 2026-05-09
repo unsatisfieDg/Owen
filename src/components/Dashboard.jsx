@@ -111,7 +111,7 @@ const Dashboard = ({
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         user={user}
-        userName={userData.name}
+        userName={userData.givenName}
         greeting={getGreeting()}
         onProfileClick={() => navigation.navigate('Profile')}
         onMascotPress={() => setShowAIAssistant(true)}

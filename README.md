@@ -1,4 +1,4 @@
-# MacroGenius - React Native
+# Owen - React Native
 
 Track your nutrition to achieve your health and fitness goals. This is a native mobile app built for both iOS and Android.
 
@@ -20,13 +20,13 @@ Track your nutrition to achieve your health and fitness goals. This is a native 
 - **Quick Logging** - Add foods quickly with custom serving sizes in grams.
 - **Offline Search** - Built-in SQLite database with over 9,000 items for use without an internet connection.
 - **Barcode Scanner** - Scan food labels to automatically retrieve and log nutrition data.
-- **AI Assistant** - A hybrid assistant that runs locally on high-end devices and uses the cloud as a backup for others.
+- **AI Assistant** - Owen, a hybrid assistant that runs locally on high-end devices and uses the cloud as a backup for others.
 
 ### Goal System
 - **Daily Targets** - Notifications for when you reach 95% or more of your daily macro targets.
 - **Daily Streaks** - Tracks how many consecutive days you have met your goals.
 - **History and Stats** - View your progress over weeks, months, or the entire time you have used the app.
-- **Milestones** - Simple animations and messages to acknowledge reached goals.
+- **Milestones** - Simple animations and messages from Owen to acknowledge reached goals.
 
 ### Profile and Personalization
 - **Dashboard** - A summary view based on your specific user data.
@@ -54,8 +54,8 @@ Track your nutrition to achieve your health and fitness goals. This is a native 
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/unsatisfieDg/MacroGenius.git
-cd MacroGenius
+git clone https://github.com/unsatisfieDg/Owen.git
+cd Owen
 
 # Install dependencies
 npm install
@@ -71,7 +71,7 @@ npm start
 
 ## Project Structure
 ```
-macrogenius/
+owen/
 ├── App.js                      # Main application logic
 ├── src/
 │   ├── components/             # UI components
@@ -87,7 +87,7 @@ macrogenius/
 - **Edamam API** for external food data.
 
 ## Usage
-1. **Setup**: Enter your age, gender, height, weight, and activity level.
+1. **Setup**: Enter your age, gender, height, weight, and activity level with Owen's help.
 2. **Logging**: Search for foods or scan barcodes to log your meals.
 3. **Review**: Check your progress bars and pie chart to stay on track.
 4. **Consistency**: Aim to hit your targets daily to build your streak.
@@ -111,4 +111,4 @@ This project is licensed under the MIT License.
 - The Expo and React Native communities.
 
 ---
-**Developed to help users take control of their nutrition and fitness.**
+**Developed to help users take control of their nutrition and fitness with Owen.**

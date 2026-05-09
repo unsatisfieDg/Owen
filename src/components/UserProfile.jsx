@@ -9,10 +9,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   Dimensions,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Picker } from '@react-native-picker/picker';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useCompletionTracking } from '../hooks/useCompletionTracking';
 
@@ -30,6 +31,15 @@ const UserProfile = ({
   navigation,
   darkMode,
 }) => {
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  
+  const GOAL_OPTIONS = [
+    { label: 'Maintenance (Current Weight)', value: 'maintain' },
+    { label: 'Bulking (Muscle Gain)', value: 'muscle' },
+    { label: 'Cutting (Fat Loss)', value: 'loss' },
+    { label: 'Recomp (Lose Fat + Gain Muscle)', value: 'recomp' },
+    { label: 'Slow Fat Loss', value: 'slowloss' },
+  ];
   const [currentWeight, setCurrentWeight] = useState(
     profile.currentWeight?.toString() || userData.weight
   );
@@ -125,7 +135,12 @@ const UserProfile = ({
           <View style={[styles.infoCard, darkMode && styles.infoCardDark]}>
             <Icon name="account-circle" size={64} color="#0f766e" />
             <Text style={styles.username}>{user.username}</Text>
-            <Text style={[styles.name, darkMode && styles.nameDark]}>{userData.name}</Text>
+            <Text style={[styles.name, darkMode && styles.nameDark]}>
+              {userData.firstName} {userData.lastName}
+            </Text>
+            <Text style={[styles.givenName, darkMode && styles.nameDark]}>
+              Called: {userData.givenName}
+            </Text>
           </View>
 
           {/* Current Weight */}
@@ -168,24 +183,19 @@ const UserProfile = ({
                 </Text>
               </View>
             ) : (
-              // Editable picker when editing
-              <View style={[
-                styles.pickerWrapper, 
-                darkMode && styles.pickerWrapperDark
-              ]}>
-                <Picker
-                  selectedValue={selectedGoal}
-                  onValueChange={(value) => setSelectedGoal(value)}
-                  style={[styles.picker, darkMode && styles.pickerDark]}
-                  itemStyle={styles.pickerItem}
-                >
-                  <Picker.Item label="Maintenance (Current Weight)" value="maintain" />
-                  <Picker.Item label="Bulking (Muscle Gain)" value="muscle" />
-                  <Picker.Item label="Cutting (Fat Loss)" value="loss" />
-                  <Picker.Item label="Recomp (Lose Fat + Gain Muscle)" value="recomp" />
-                  <Picker.Item label="Slow Fat Loss" value="slowloss" />
-                </Picker>
-              </View>
+              // Editable tap-select when editing
+              <TouchableOpacity 
+                style={[
+                  styles.pickerWrapper, 
+                  darkMode && styles.pickerWrapperDark
+                ]}
+                onPress={() => setShowGoalModal(true)}
+              >
+                <Text style={[styles.pickerText, darkMode && styles.pickerTextDark]}>
+                  {GOAL_OPTIONS.find(o => o.value === selectedGoal)?.label || 'Select goal...'}
+                </Text>
+                <Icon name="chevron-down" size={20} color={darkMode ? '#9ca3af' : '#0f766e'} />
+              </TouchableOpacity>
             )}
           </View>
 
@@ -324,6 +334,54 @@ const UserProfile = ({
         </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Selection Modal */}
+      <Modal
+        visible={showGoalModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowGoalModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, darkMode && styles.modalContentDark]}>
+            <View style={[styles.modalHeader, darkMode && styles.modalHeaderDark]}>
+              <Text style={[styles.modalTitle, darkMode && styles.textDark]}>Select Fitness Goal</Text>
+              <TouchableOpacity onPress={() => setShowGoalModal(false)}>
+                <Icon name="close" size={24} color={darkMode ? '#fff' : '#111827'} />
+              </TouchableOpacity>
+            </View>
+            
+            <FlatList
+              data={GOAL_OPTIONS}
+              keyExtractor={(item) => item.value}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  style={[
+                    styles.optionItem,
+                    darkMode && styles.optionItemDark,
+                    selectedGoal === item.value && (darkMode ? styles.optionItemActiveDark : styles.optionItemActive)
+                  ]}
+                  onPress={() => {
+                    setSelectedGoal(item.value);
+                    setShowGoalModal(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.optionLabel,
+                    darkMode && styles.textDark,
+                    selectedGoal === item.value && styles.optionLabelActive
+                  ]}>
+                    {item.label}
+                  </Text>
+                  {selectedGoal === item.value && (
+                    <Icon name="check" size={20} color="#0d9488" />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -418,9 +476,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   name: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111827',
+    marginTop: 8,
+  },
+  givenName: {
     fontSize: 14,
     color: '#6b7280',
-    marginTop: 4,
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   nameDark: {
     color: '#9ca3af',
@@ -515,26 +580,85 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
   },
   pickerWrapper: {
+    height: 48,
     borderWidth: 2,
     borderColor: '#d1d5db',
     borderRadius: 12,
     backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    justifyContent: 'space-between',
   },
   pickerWrapperDark: {
-    backgroundColor: '#2a2a2a',
-    borderColor: '#404040',
+    backgroundColor: '#262626',
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  picker: {
-    height: 48,
-    color: '#111827',
-  },
-  pickerDark: {
-    color: '#e5e7eb',
-  },
-  pickerItem: {
+  pickerText: {
     fontSize: 16,
-    height: 48,
     color: '#111827',
+  },
+  pickerTextDark: {
+    color: '#fff',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    maxHeight: '70%',
+  },
+  modalContentDark: {
+    backgroundColor: '#1a1a1a',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+  },
+  modalHeaderDark: {
+    borderBottomColor: 'rgba(255,255,255,0.08)',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
+  },
+  optionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 18,
+    paddingHorizontal: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f9fafb',
+  },
+  optionItemDark: {
+    borderBottomColor: 'rgba(255,255,255,0.03)',
+  },
+  optionItemActive: {
+    backgroundColor: '#f0fdfa',
+  },
+  optionItemActiveDark: {
+    backgroundColor: 'rgba(13, 148, 136, 0.1)',
+  },
+  optionLabel: {
+    fontSize: 16,
+    color: '#374151',
+  },
+  optionLabelActive: {
+    color: '#0d9488',
+    fontWeight: '700',
   },
   hint: {
     fontSize: 12,
@@ -652,6 +776,9 @@ const styles = StyleSheet.create({
   },
   progressLabelDark: {
     color: '#9ca3af',
+  },
+  textDark: {
+    color: '#fff',
   },
 });
 

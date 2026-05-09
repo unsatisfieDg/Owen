@@ -11,18 +11,22 @@ export const useFoodDatabase = () => {
     async function loadDatabase() {
       try {
         const dbName = 'offline_foods.db';
-        const dbPath = `${FileSystem.documentDirectory}SQLite/${dbName}`;
+        const sqliteDir = `${FileSystem.documentDirectory}SQLite`;
+        const dbPath = `${sqliteDir}/${dbName}`;
         
-        // Ensure the directory exists
-        const dirInfo = await FileSystem.getInfoAsync(`${FileSystem.documentDirectory}SQLite`);
+        // Ensure the directory exists gracefully
+        const dirInfo = await FileSystem.getInfoAsync(sqliteDir);
         if (!dirInfo.exists) {
-          await FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}SQLite`);
+          try {
+            await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
+          } catch (e) {
+            // Directory might have been created by expo-sqlite already, ignore
+          }
         }
 
         // Check if the DB is already copied, if not copy it from assets
         const fileInfo = await FileSystem.getInfoAsync(dbPath);
         if (!fileInfo.exists) {
-          console.log('Copying massive SQLite database to device...');
           const asset = Asset.fromModule(require('../../assets/offline_foods.db'));
           await asset.downloadAsync();
           await FileSystem.copyAsync({
@@ -36,7 +40,7 @@ export const useFoodDatabase = () => {
         setDb(database);
         setIsReady(true);
       } catch (error) {
-        console.error("Error loading SQLite Database:", error);
+        // Silent fail for better UX; Owen will use fallback search if SQLite fails
       }
     }
 

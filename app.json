@@ -1,25 +1,25 @@
 {
   "expo": {
-    "name": "MacroGenius",
-    "slug": "macrogenius",
+    "name": "Owen",
+    "slug": "owen-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "main": "index.js",
     "splash": {
+      "image": "./assets/owen_icon_white.png",
       "resizeMode": "contain",
-      "backgroundColor": "#f8f9fa"
+      "backgroundColor": "#0f766e"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.macrogenius.app",
+      "bundleIdentifier": "com.owen.app",
       "requiresFullScreen": false
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#6366f1"
       },
-      "package": "com.macrogenius.app",
+      "package": "com.owen.app",
       "softwareKeyboardLayoutMode": "pan"
     },
     "web": {},
@@ -28,7 +28,7 @@
       [
         "expo-barcode-scanner",
         {
-          "cameraPermission": "Allow MacroGenius to access your camera to scan food barcodes."
+          "cameraPermission": "Allow Owen to access your camera to scan food barcodes."
         }
       ],
       "expo-sqlite"

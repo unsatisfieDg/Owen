@@ -51,6 +51,10 @@ const Header = ({
   nutrition,
 }) => {
   const message = getContextualMessage(dailyLog, nutrition);
+  
+  // Calculate if Owen should be happy (>= 50% progress)
+  const progress = nutrition?.tdee ? (dailyLog?.calories || 0) / nutrition.tdee : 0;
+  const isHappy = progress >= 0.5;
 
   return (
     <View style={[styles.container, darkMode && styles.containerDark]}>
@@ -96,7 +100,7 @@ const Header = ({
       {/* ── Mascot + Speech Bubble ── */}
       <View style={styles.mascotRow}>
         <TouchableOpacity onPress={onMascotPress} activeOpacity={0.8} style={styles.mascotTouch}>
-          <FloatingMascot size={isSmallScreen ? 140 : 155} />
+          <FloatingMascot size={isSmallScreen ? 180 : 200} isHappy={isHappy} />
         </TouchableOpacity>
 
         {/* Speech bubble */}
@@ -116,10 +120,10 @@ const Header = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: isSmallScreen ? 12 : 16,
-    paddingTop: Platform.OS === 'android' ? 12 : 4,
-    paddingBottom: 12,
+    paddingTop: Platform.OS === 'android' ? 8 : 2,
+    paddingBottom: 0,
     backgroundColor: '#f8f9fa',
+    overflow: 'hidden',
   },
   containerDark: {
     backgroundColor: '#0f0f0f',
@@ -131,6 +135,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 0,
+    paddingHorizontal: isSmallScreen ? 12 : 16,
   },
   dateText: {
     fontSize: 11,
@@ -188,12 +193,13 @@ const styles = StyleSheet.create({
 
   /* ── Greeting ── */
   greeting: {
-    fontSize: isSmallScreen ? 28 : 32,
+    fontSize: isSmallScreen ? 24 : 28,
     fontWeight: '400',
     color: '#374151',
-    lineHeight: isSmallScreen ? 38 : 44,
-    marginTop: -4,
-    marginBottom: 16,
+    lineHeight: isSmallScreen ? 32 : 36,
+    marginTop: -2,
+    marginBottom: 0,
+    paddingHorizontal: isSmallScreen ? 12 : 16,
   },
   greetingDark: {
     color: '#d1d5db',
@@ -210,11 +216,14 @@ const styles = StyleSheet.create({
   mascotRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 8,
+    gap: 8,
+    marginTop: -20,
+    marginBottom: -14,
+    paddingRight: isSmallScreen ? 12 : 16,
   },
   mascotTouch: {
     alignItems: 'center',
+    marginLeft: -18,
   },
   tapHint: {
     flexDirection: 'row',
@@ -235,7 +244,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: isSmallScreen ? 12 : 14,
+    padding: isSmallScreen ? 10 : 12,
+    marginLeft: -10,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -251,8 +261,7 @@ const styles = StyleSheet.create({
   bubblePointer: {
     position: 'absolute',
     left: -8,
-    top: '50%',
-    marginTop: -7,
+    top: 22,
     width: 0,
     height: 0,
     borderTopWidth: 7,

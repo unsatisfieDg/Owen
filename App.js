@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { StatusBar, Platform } from 'react-native';
+import { StatusBar, Platform, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -28,7 +28,7 @@ function App() {
 
   // User-specific state
   const [userData, setUserData] = useState({
-    name: '', age: '', height: '', weight: '', gender: '',
+    firstName: '', lastName: '', givenName: '', age: '', height: '', weight: '', gender: '',
     activityLevel: '', goal: '', targetWeight: ''
   });
 
@@ -71,7 +71,7 @@ function App() {
           }
         } else {
           setUserData({
-            name: '', age: '', height: '', weight: '', gender: '',
+            firstName: '', lastName: '', givenName: '', age: '', height: '', weight: '', gender: '',
             activityLevel: '', goal: '', targetWeight: ''
           });
         }
@@ -94,7 +94,7 @@ function App() {
       } else {
         // User logged out, reset everything
         setUserData({
-          name: '', age: '', height: '', weight: '', gender: '',
+          firstName: '', lastName: '', givenName: '', age: '', height: '', weight: '', gender: '',
           activityLevel: '', goal: '', targetWeight: ''
         });
         setDailyLog({ calories: 0, protein: 0, carbs: 0, fats: 0, foods: [] });
@@ -108,7 +108,7 @@ function App() {
   // Save user-specific data when it changes
   useEffect(() => {
     const saveUserData = async () => {
-      if (user && userData.name) {
+      if (user && userData.givenName) {
         const userDataKey = `macroGenie_userData_${user.id}`;
         await AsyncStorage.setItem(userDataKey, JSON.stringify(userData));
       }
@@ -142,7 +142,7 @@ function App() {
       // Simulate network check
       const isOnline = true; // Assume online for now
       if (isOnline && user && dailyLog.calories > 0) {
-        console.log(`☁️ [Cloud Sync] Synchronizing ${userData.name || 'Athlete'}'s progress to Coach dashboard...`);
+        console.log(`☁️ [Cloud Sync] Synchronizing ${userData.givenName || 'Athlete'}'s progress to Coach dashboard...`);
         // Mock sync delay
         await new Promise(resolve => setTimeout(resolve, 800));
         console.log('☁️ [Cloud Sync] Success: Coach has received latest macros and daily log.');
@@ -173,11 +173,11 @@ function App() {
     saveDarkMode();
   }, [darkMode]);
 
-  // Simulate loading time
+  // Snappy loading time
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 3000);
+    }, 1500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -211,7 +211,7 @@ function App() {
   }
 
   // Check if user needs setup
-  const shouldShowSetup = !userData.name || !userData.weight;
+  const shouldShowSetup = !userData.givenName || !userData.weight;
 
   return (
     <SafeAreaProvider>
@@ -221,54 +221,59 @@ function App() {
           backgroundColor={darkMode ? "#0f0f0f" : "#ffffff"}
           translucent={Platform.OS === 'android'}
         />
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          {shouldShowSetup ? (
-            <Stack.Screen name="Setup">
-              {(props) => (
-                <UserSetup
-                  {...props}
-                  userData={userData}
-                  setUserData={setUserData}
-                  onComplete={handleSetupComplete}
-                />
-              )}
-            </Stack.Screen>
-          ) : (
-            <>
-              <Stack.Screen name="Main">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+        >
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {shouldShowSetup ? (
+              <Stack.Screen name="Setup">
                 {(props) => (
-                  <Dashboard
-                    {...props}
-                    userData={userData}
-                    nutrition={nutrition}
-                    dailyLog={dailyLog}
-                    setDailyLog={setDailyLog}
-                    weeklyData={weeklyData}
-                    darkMode={darkMode}
-                    setDarkMode={setDarkMode}
-                    user={user}
-                    calculateNutrition={calculateNutrition}
+                  <UserSetup 
+                    {...props} 
+                    userData={userData} 
+                    setUserData={setUserData} 
+                    onComplete={handleSetupComplete} 
                   />
                 )}
               </Stack.Screen>
-              <Stack.Screen name="Profile">
-                {(props) => (
-                  <UserProfile
-                    {...props}
-                    user={user}
-                    profile={profile}
-                    userData={userData}
-                    setUserData={setUserData}
-                    updateProfile={updateProfile}
-                    onWeightChange={handleWeightChange}
-                    calculateNutrition={calculateNutrition}
-                    darkMode={darkMode}
-                  />
-                )}
-              </Stack.Screen>
-            </>
-          )}
-        </Stack.Navigator>
+            ) : (
+              <>
+                <Stack.Screen name="Main">
+                  {(props) => (
+                    <Dashboard
+                      {...props}
+                      userData={userData}
+                      nutrition={nutrition}
+                      dailyLog={dailyLog}
+                      setDailyLog={setDailyLog}
+                      weeklyData={weeklyData}
+                      darkMode={darkMode}
+                      setDarkMode={setDarkMode}
+                      user={user}
+                      calculateNutrition={calculateNutrition}
+                    />
+                  )}
+                </Stack.Screen>
+                <Stack.Screen name="Profile">
+                  {(props) => (
+                    <UserProfile
+                      {...props}
+                      user={user}
+                      profile={profile}
+                      userData={userData}
+                      setUserData={setUserData}
+                      updateProfile={updateProfile}
+                      onWeightChange={handleWeightChange}
+                      calculateNutrition={calculateNutrition}
+                      darkMode={darkMode}
+                    />
+                  )}
+                </Stack.Screen>
+              </>
+            )}
+          </Stack.Navigator>
+        </KeyboardAvoidingView>
       </NavigationContainer>
     </SafeAreaProvider>
   );
