@@ -10,7 +10,6 @@ const BLINK_CLOSE = 2;
 const LOOK_LEFT   = 3;
 const LOOK_RIGHT  = 4;
 const SMILE       = 5;
-const WRITING     = 6;
 
 const BLINK_SEQ      = [BLINK_HALF, BLINK_CLOSE, BLINK_HALF, IDLE];
 const BLINK_FRAME_MS = 50;
@@ -94,7 +93,6 @@ const FloatingMascot = ({ size = 120, isHappy = false }) => {
           ],
         }}
       >
-        <Image source={require('../../assets/owen_writing.png')}      fadeDuration={0} style={[imgStyle, frame === WRITING     ? shown : hidden]} resizeMode="contain" />
         <Image source={require('../../assets/genius_bot.png')}         fadeDuration={0} style={[imgStyle, frame === IDLE        ? shown : hidden]} resizeMode="contain" />
         <Image source={require('../../assets/owen_blink_half.png')}    fadeDuration={0} style={[imgStyle, frame === BLINK_HALF  ? shown : hidden]} resizeMode="contain" />
         <Image source={require('../../assets/owen_blink_closed.png')}  fadeDuration={0} style={[imgStyle, frame === BLINK_CLOSE ? shown : hidden]} resizeMode="contain" />

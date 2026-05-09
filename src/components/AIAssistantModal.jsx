@@ -96,7 +96,7 @@ const AIAssistantModal = ({ visible, onClose, onAddFood, user }) => {
 
             {isProcessing && (
               <View style={[styles.messageBubble, styles.assistantBubble, styles.loadingBubble]}>
-                <ActivityIndicator size="small" color="#8b5cf6" />
+                <ActivityIndicator size="small" color="#0d9488" />
                 <Text style={styles.processingText}>Processing offline & cloud...</Text>
               </View>
             )}
