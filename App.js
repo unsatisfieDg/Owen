@@ -171,8 +171,6 @@ function App() {
     setIsLoading(false);
   }, []);
 
-  // Authentication removed for on-device priority
-
   const handleSetupComplete = () => {
     // Save current weight and target weight to profile
     if (userData.weight) {
@@ -181,7 +179,6 @@ function App() {
     if (userData.targetWeight) {
       updateProfile({ targetWeight: parseFloat(userData.targetWeight) });
     }
-    
     calculateNutrition();
   };
 
@@ -190,7 +187,6 @@ function App() {
       ...prev,
       weight: newWeight
     }));
-    
     setTimeout(() => {
       calculateNutrition();
     }, 100);
