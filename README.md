@@ -85,8 +85,8 @@ owen/
 - [x] Barcode scanner integration
 - [x] SQLite offline database (9,000+ items)
 - [x] Hybrid AI Assistant (On-device + Cloud)
-- [ ] Meal planning and recipe suggestions
-- [ ] Data export (CSV/PDF)
+- [x] Meal planning and recipe suggestions (25+ Pinoy & Budget recipes)
+- [x] Data export (CSV)
 - [ ] Social sharing features
 
 ## License

@@ -8,7 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import FloatingMascot from './FloatingMascot';
+import OwenMascot from './OwenMascot';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const isSmallScreen = SCREEN_WIDTH < 375;
@@ -28,14 +28,49 @@ const getDateString = () => {
 
 const getContextualMessage = (dailyLog, nutrition) => {
   if (!nutrition?.tdee) return 'Set up your profile to unlock personalized targets!';
+  
   const cals        = dailyLog?.calories || 0;
-  const remaining   = Math.round(nutrition.tdee - cals);
-  const proteinLeft = Math.round((nutrition.protein || 0) - (dailyLog?.protein || 0));
-  if (cals === 0)        return "You haven't logged anything yet. What did you eat today?";
-  if (remaining > 800)   return `You still have ${remaining} kcal room today. Keep fueling up!`;
-  if (remaining < 0)     return `You're ${Math.abs(remaining)} kcal over your goal. Maybe a lighter dinner?`;
-  if (remaining < 150)   return `Almost at your goal — just ${remaining} kcal left. You've got this!`;
-  if (proteinLeft > 30)  return `Protein check! ${proteinLeft}g left to hit your target. 💪`;
+  const protein     = dailyLog?.protein || 0;
+  const carbs       = dailyLog?.carbs || 0;
+  const fats        = dailyLog?.fats || 0;
+
+  const remCals     = Math.round(nutrition.tdee - cals);
+  const remProtein  = Math.round((nutrition.protein || 0) - protein);
+  const remCarbs    = Math.round((nutrition.carbs || 0) - carbs);
+  const remFats     = Math.round((nutrition.fats || 0) - fats);
+
+  if (cals === 0) return "Ready to start? Log your first meal and I'll track the macros! 🍎";
+  
+  // Priority 1: Protein (The most important for most users)
+  if (remProtein > 20) {
+    return `Protein check! You still need ${remProtein}g to hit your muscle-building target today. 💪`;
+  }
+
+  // Priority 2: Large calorie gap
+  if (remCals > 600) {
+    return `You've got ${remCals} kcal left! Maybe a balanced meal with some ${remCarbs > 30 ? 'Carbs' : 'Healthy Fats'}? 🍱`;
+  }
+
+  // Priority 3: Carbs (Energy)
+  if (remCarbs > 40) {
+    return `Energy levels low? You have room for ${remCarbs}g of Carbs. Perfect for a pre-workout snack! ⚡`;
+  }
+
+  // Priority 4: Fats
+  if (remFats > 15) {
+    return `Healthy fats needed! ${remFats}g left. Think avocado, nuts, or olive oil! 🥑`;
+  }
+
+  // Priority 5: Over limit
+  if (remCals < -50) {
+    return `Whoops, you're ${Math.abs(remCals)} kcal over. No sweat! Let's stay active today. 🏃‍♂️`;
+  }
+
+  // Success
+  if (Math.abs(remCals) <= 100 && remProtein <= 10) {
+    return "Absolute perfection! You've nailed your macro targets today. Great job! 🏆";
+  }
+
   return 'Looking great today! Stay consistent and keep the momentum going. 🔥';
 };
 
@@ -100,7 +135,7 @@ const Header = ({
       {/* ── Mascot + Speech Bubble ── */}
       <View style={styles.mascotRow}>
         <TouchableOpacity onPress={onMascotPress} activeOpacity={0.8} style={styles.mascotTouch}>
-          <FloatingMascot size={isSmallScreen ? 180 : 200} isHappy={isHappy} />
+          <OwenMascot size={isSmallScreen ? 180 : 200} isHappy={isHappy} />
         </TouchableOpacity>
 
         {/* Speech bubble */}
@@ -217,7 +252,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: -20,
+    marginTop: -30,
     marginBottom: -14,
     paddingRight: isSmallScreen ? 12 : 16,
   },

@@ -45,6 +45,9 @@ const Dashboard = ({
 
   const [completionChecked, setCompletionChecked] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'assistant', text: "Hi! I'm Owen. Tell me what you ate, or ask me for a 'meal suggestion' based on your goals!" }
+  ]);
 
   // Check if macros are complete (Calories, Protein, Carbs, Fats)
   const checkMacrosComplete = useCallback(() => {
@@ -207,6 +210,7 @@ const Dashboard = ({
           onInputFocus={handleInputFocus}
           onInputBlur={handleInputBlur}
           user={user}
+          onOpenAI={() => setShowAIAssistant(true)}
         />
 
         {/* Footer */}
@@ -221,10 +225,11 @@ const Dashboard = ({
         stats={getCompletionStats()}
       />
 
-      {/* AI Assistant Modal — triggered by tapping the mascot */}
       <AIAssistantModal
         visible={showAIAssistant}
         onClose={() => setShowAIAssistant(false)}
+        chatHistory={chatHistory}
+        setChatHistory={setChatHistory}
         onAddFood={(food) => {
           setDailyLog(prev => ({
             calories: prev.calories + food.calories,
@@ -233,9 +238,10 @@ const Dashboard = ({
             fats:     prev.fats     + food.fats,
             foods:    [...prev.foods, food],
           }));
-          setShowAIAssistant(false);
         }}
         user={user}
+        nutrition={nutrition}
+        dailyLog={dailyLog}
       />
     </SafeAreaView>
   );

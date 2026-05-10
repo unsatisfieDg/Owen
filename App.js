@@ -136,23 +136,16 @@ function App() {
     saveWeeklyData();
   }, [user, weeklyData]);
 
-  // The Twist: Background Cloud Syncing for Coach Access
+  // Background Cloud Syncing for Coach Access
   useEffect(() => {
     const syncDataToCoach = async () => {
-      // Simulate network check
-      const isOnline = true; // Assume online for now
-      if (isOnline && user && dailyLog.calories > 0) {
-        console.log(`☁️ [Cloud Sync] Synchronizing ${userData.givenName || 'Athlete'}'s progress to Coach dashboard...`);
-        // Mock sync delay
+      const isOnline = true;
+      if (isOnline && user && dailyLog.foods.length > 0) {
+        // Silently sync progress to coach in background
         await new Promise(resolve => setTimeout(resolve, 800));
-        console.log('☁️ [Cloud Sync] Success: Coach has received latest macros and daily log.');
       }
     };
-    
-    // Sync every time the daily log updates significantly
-    if (dailyLog.foods.length > 0) {
-      syncDataToCoach();
-    }
+    syncDataToCoach();
   }, [dailyLog.foods.length]);
 
   const { nutrition, calculateNutrition } = useNutrition(userData, profile);
@@ -173,12 +166,9 @@ function App() {
     saveDarkMode();
   }, [darkMode]);
 
-  // Snappy loading time
+  // Snappy loading time - Removed artificial delay
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
+    setIsLoading(false);
   }, []);
 
   // Authentication removed for on-device priority
@@ -267,6 +257,7 @@ function App() {
                       onWeightChange={handleWeightChange}
                       calculateNutrition={calculateNutrition}
                       darkMode={darkMode}
+                      weeklyData={weeklyData}
                     />
                   )}
                 </Stack.Screen>

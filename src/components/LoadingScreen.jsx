@@ -8,7 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import FloatingMascot from './FloatingMascot';
+import OwenMascot from './OwenMascot';
 
 const LoadingScreen = () => {
   const dot1 = useRef(new Animated.Value(0)).current;

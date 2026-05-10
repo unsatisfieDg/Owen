@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useCompletionTracking } from '../hooks/useCompletionTracking';
+import { exportLogsToCSV } from '../utils/exportUtils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const isSmallScreen = SCREEN_WIDTH < 375;
@@ -30,6 +31,7 @@ const UserProfile = ({
   calculateNutrition,
   navigation,
   darkMode,
+  weeklyData,
 }) => {
   const [showGoalModal, setShowGoalModal] = useState(false);
   
@@ -284,6 +286,29 @@ const UserProfile = ({
                 </Text>
               </View>
             </View>
+          </View>
+
+          {/* Data Management */}
+          <View style={[styles.progressCard, darkMode && styles.progressCardDark, { marginTop: 8 }]}>
+            <Text style={[styles.progressTitle, darkMode && styles.progressTitleDark]}>
+              💾 Data Management
+            </Text>
+            <Text style={[styles.hint, { marginBottom: 16, marginTop: -8 }]}>
+              Export your nutrition history for your coach or own records.
+            </Text>
+            
+            <TouchableOpacity 
+              style={styles.exportButton} 
+              onPress={() => exportLogsToCSV(weeklyData)}
+            >
+              <LinearGradient
+                colors={['#0f766e', '#134e4a']}
+                style={styles.exportGradient}
+              >
+                <Icon name="file-export-outline" size={20} color="#fff" />
+                <Text style={styles.exportText}>Export Daily Logs (CSV)</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
 
           {/* User Stats */}
@@ -779,6 +804,22 @@ const styles = StyleSheet.create({
   },
   textDark: {
     color: '#fff',
+  },
+  exportButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  exportGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 48,
+    gap: 8,
+  },
+  exportText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
 

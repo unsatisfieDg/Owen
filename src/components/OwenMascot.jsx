@@ -17,10 +17,9 @@ const BLINK_FRAME_MS = 50;
 // Idle expressions played randomly
 const IDLE_EXPRESSIONS = [LOOK_LEFT, LOOK_RIGHT, SMILE];
 
-const FloatingMascot = ({ size = 120, isHappy = false }) => {
+const OwenMascot = ({ size = 120, isHappy = false }) => {
   const [frame, setFrame] = useState(IDLE);
-  const scaleIn = useRef(new Animated.Value(0.85)).current;
-  const translateY = useRef(new Animated.Value(0)).current;
+  const scaleIn = useRef(new Animated.Value(1)).current;
 
   // Sync frame with isHappy when not animating other things
   useEffect(() => {
@@ -29,9 +28,9 @@ const FloatingMascot = ({ size = 120, isHappy = false }) => {
     }
   }, [isHappy]);
 
-  // ── Pop-in on mount ──
+  // ── Pop-in on mount removed for instant rendering ──
   useEffect(() => {
-    Animated.spring(scaleIn, { toValue: 1, tension: 80, friction: 6, useNativeDriver: true }).start();
+    // scaleIn is already 1
   }, []);
 
   // ── Random blink loop (every 2–4s) ──
@@ -89,7 +88,6 @@ const FloatingMascot = ({ size = 120, isHappy = false }) => {
           height: size,
           transform: [
             { scale: scaleIn },
-            { translateY: translateY },
           ],
         }}
       >
@@ -108,4 +106,4 @@ const styles = StyleSheet.create({
   container: { alignItems: 'center', justifyContent: 'flex-end' },
 });
 
-export default FloatingMascot;
+export default OwenMascot;

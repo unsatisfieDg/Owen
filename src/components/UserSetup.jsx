@@ -16,7 +16,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import FloatingMascot from './FloatingMascot';
+import OwenMascot from './OwenMascot';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const isSmallScreen = SCREEN_WIDTH < 375;
@@ -111,6 +111,7 @@ const UserSetup = ({ userData, setUserData, onComplete, navigation }) => {
               source={require('../../assets/owen_icon_white.png')} 
               style={{ width: 80, height: 80 }} 
               resizeMode="contain" 
+              fadeDuration={0}
             />
             <Text style={styles.appName}>Owen</Text>
 

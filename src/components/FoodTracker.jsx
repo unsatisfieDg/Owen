@@ -32,7 +32,7 @@ try {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus, onInputBlur, user }) => {
+const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus, onInputBlur, user, onOpenAI }) => {
   const [foodSearch, setFoodSearch] = useState('');
   const [foodAmount, setFoodAmount] = useState('100');
   const [searchResults, setSearchResults] = useState([]);
@@ -49,6 +49,8 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const [isLoadingBarcode, setIsLoadingBarcode] = useState(false);
+  const [scannedProduct, setScannedProduct] = useState(null);
+  const [showScannerPreview, setShowScannerPreview] = useState(false);
 
   // AI Assistant state
   const [showAIAssistant, setShowAIAssistant] = useState(false);
@@ -115,7 +117,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
   // Search using API when user clicks search
   const handleSearch = async () => {
     if (!foodSearch.trim()) {
-      Alert.alert('Enter Food', 'Please enter a food name to search.');
+      Alert.alert('Enter Food', 'Please enter a food name or barcode number.');
       return;
     }
     
@@ -123,7 +125,21 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
     setShowResults(true);
     
     try {
-      // Offline Search: SQLite + Legacy + Custom
+      // Barcode detection (if search is all digits and 8-14 chars)
+      const isBarcode = /^\d{8,14}$/.test(foodSearch.trim());
+      
+      if (isBarcode) {
+        const productData = await fetchBarcodeData(foodSearch.trim());
+        if (productData) {
+          setScannedProduct(productData);
+          setShowScannerPreview(true);
+          setShowResults(false);
+          setIsSearching(false);
+          return;
+        }
+      }
+
+      // Offline Search Fallback
       const sqliteResults = isDbReady ? await searchSQLite(foodSearch) : [];
       const localResults = searchFoodDatabase(foodSearch);
       const customResults = customFoods.filter(f => f.name.toLowerCase().includes(foodSearch.toLowerCase()));
@@ -144,7 +160,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
       setSearchResults(combined);
       
       if (combined.length === 0) {
-        Alert.alert('No Results', 'No food found. Try a different name!');
+        Alert.alert('No Results', 'No food found. Try a different name or check the barcode!');
       }
     } catch (error) {
       console.error('Food search error:', error);
@@ -265,26 +281,8 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
       const productData = await fetchBarcodeData(data);
       
       if (productData) {
-        // Automatically add food to daily log
-        const food = {
-          id: Date.now(),
-          name: productData.name,
-          serving: productData.serving,
-          calories: productData.calories,
-          protein: productData.protein,
-          carbs: productData.carbs,
-          fats: productData.fats,
-          timestamp: new Date().toISOString()
-        };
-
-        setDailyLog(prev => ({
-          calories: prev.calories + food.calories,
-          protein: prev.protein + food.protein,
-          carbs: prev.carbs + food.carbs,
-          fats: prev.fats + food.fats,
-          foods: [...prev.foods, food]
-        }));
-
+        setScannedProduct(productData);
+        setShowScannerPreview(true);
         setShowScanner(false);
         
         // Show success alert with nutrition info (only calories, carbs, protein)
@@ -299,7 +297,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
         );
       } else {
         setShowScanner(false);
-        Alert.alert('Not Found', 'Product not found in database. Try searching manually.');
+        Alert.alert('Not Found', 'Product not found. You can add it manually as a Custom Food!');
       }
     } catch (error) {
       setShowScanner(false);
@@ -370,7 +368,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
         {/* AI Assistant Banner */}
         <TouchableOpacity 
           style={styles.aiBannerContainer}
-          onPress={() => setShowAIAssistant(true)}
+          onPress={onOpenAI}
         >
           <LinearGradient
             colors={['#0d9488', '#134e4a']}
@@ -456,20 +454,24 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
             </LinearGradient>
           </TouchableOpacity>
           
-          {/* Barcode Scanner Button - Only show if available */}
-          {BarCodeScanner && (
-            <TouchableOpacity 
-              style={styles.searchButton} 
-              onPress={handleOpenScanner}
+          {/* Barcode Scanner Button - Reverted to minimalist icon */}
+          <TouchableOpacity 
+            style={styles.searchButton} 
+            onPress={() => {
+              if (BarCodeScanner) {
+                handleOpenScanner();
+              } else {
+                Alert.alert('Scanner Restricted', 'Native scanning is disabled in this browser view. Tip: You can still search by typing the barcode digits!');
+              }
+            }}
+          >
+            <LinearGradient
+              colors={['#0d9488', '#0f766e']}
+              style={styles.searchButtonGradient}
             >
-              <LinearGradient
-                colors={['#0d9488', '#0f766e']}
-                style={styles.searchButtonGradient}
-              >
-                <Icon name="barcode-scan" size={24} color="#fff" />
-              </LinearGradient>
-            </TouchableOpacity>
-          )}
+              <Icon name="barcode-scan" size={24} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -621,7 +623,100 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
         )}
       </ScrollView>
 
-      {/* Barcode Scanner Modal */}
+      {/* Barcode Scanner Preview Modal */}
+      <Modal visible={showScannerPreview} animationType="fade" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Scanned Nutrition</Text>
+              <TouchableOpacity onPress={() => setShowScannerPreview(false)}>
+                <Icon name="close" size={24} color="#6b7280" />
+              </TouchableOpacity>
+            </View>
+            
+            {scannedProduct && (
+              <View style={styles.scannedContainer}>
+                <View style={styles.scannedHeader}>
+                  <Icon name="barcode" size={24} color="#0d9488" />
+                  <Text style={styles.scannedName}>{scannedProduct.name}</Text>
+                </View>
+                
+                <View style={styles.macroGrid}>
+                  <View style={styles.macroBox}>
+                    <Text style={styles.macroVal}>{scannedProduct.calories}</Text>
+                    <Text style={styles.macroLabel}>CALORIES</Text>
+                  </View>
+                  <View style={[styles.macroBox, { backgroundColor: '#eff6ff' }]}>
+                    <Text style={[styles.macroVal, { color: '#3b82f6' }]}>{scannedProduct.protein}g</Text>
+                    <Text style={styles.macroLabel}>PROTEIN</Text>
+                  </View>
+                  <View style={[styles.macroBox, { backgroundColor: '#fff7ed' }]}>
+                    <Text style={[styles.macroVal, { color: '#f97316' }]}>{scannedProduct.carbs}g</Text>
+                    <Text style={styles.macroLabel}>CARBS</Text>
+                  </View>
+                  <View style={[styles.macroBox, { backgroundColor: '#fef2f2' }]}>
+                    <Text style={[styles.macroVal, { color: '#ef4444' }]}>{scannedProduct.fats}g</Text>
+                    <Text style={styles.macroLabel}>FATS</Text>
+                  </View>
+                </View>
+
+                <View style={styles.perGramInfo}>
+                  <Icon name="information-outline" size={14} color="#6b7280" />
+                  <Text style={styles.perGramText}>
+                    Nutrition listed per {scannedProduct.serving}g serving
+                  </Text>
+                </View>
+
+                <View style={styles.addSection}>
+                  <View style={styles.amountContainer}>
+                    <Text style={styles.amountLabel}>How much are you eating? (grams):</Text>
+                    <TextInput
+                      style={styles.servingInput}
+                      keyboardType="numeric"
+                      value={foodAmount}
+                      onChangeText={setFoodAmount}
+                    />
+                  </View>
+                  <TouchableOpacity 
+                    style={styles.addButton} 
+                    onPress={() => {
+                      const amount = parseFloat(foodAmount);
+                      const multiplier = amount / scannedProduct.serving;
+                      const food = {
+                        id: Date.now(),
+                        name: scannedProduct.name,
+                        serving: amount,
+                        calories: Math.round(scannedProduct.calories * multiplier),
+                        protein: Math.round(scannedProduct.protein * multiplier),
+                        carbs: Math.round(scannedProduct.carbs * multiplier),
+                        fats: Math.round(scannedProduct.fats * multiplier),
+                        timestamp: new Date().toISOString()
+                      };
+                      setDailyLog(prev => ({
+                        calories: prev.calories + food.calories,
+                        protein: prev.protein + food.protein,
+                        carbs: prev.carbs + food.carbs,
+                        fats: prev.fats + food.fats,
+                        foods: [...prev.foods, food]
+                      }));
+                      setShowScannerPreview(false);
+                      setScannedProduct(null);
+                      setFoodAmount('100');
+                    }}
+                  >
+                    <LinearGradient colors={['#10b981', '#059669']} style={styles.addButtonGradient}>
+                      <Icon name="check" size={20} color="#fff" />
+                      <Text style={styles.addButtonText}>Add to Daily Log</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Barcode Scanner Modal (Camera View) */}
       <Modal
         visible={showScanner}
         animationType="slide"
@@ -1225,6 +1320,61 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginTop: 16,
+  },
+  scannedContainer: {
+    paddingBottom: 10,
+  },
+  scannedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20,
+    paddingRight: 20,
+  },
+  scannedName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#111827',
+    flexShrink: 1,
+  },
+  macroGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  macroBox: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: '#f0fdf4',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+  },
+  macroVal: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#059669',
+  },
+  macroLabel: {
+    fontSize: 10,
+    color: '#6b7280',
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  perGramInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 20,
+    backgroundColor: '#f9fafb',
+    padding: 10,
+    borderRadius: 8,
+  },
+  perGramText: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontStyle: 'italic',
   },
 });
 
