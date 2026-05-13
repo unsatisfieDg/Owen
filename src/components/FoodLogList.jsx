@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   View,
   Text,
@@ -238,4 +238,4 @@ const styles = StyleSheet.create({
   textSecondaryDark: { color: 'rgba(255,255,255,0.5)' },
 });
 
-export default FoodLogList;
+export default memo(FoodLogList);

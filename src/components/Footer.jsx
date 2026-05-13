@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Image } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,7 +19,8 @@ const Footer = ({ darkMode }) => {
           <Image 
             source={require('../../assets/owen_icon_white.png')} 
             style={{ width: 22, height: 22 }} 
-            resizeMode="contain" 
+            resizeMode="contain"
+            fadeDuration={0}
           />
         </LinearGradient>
         <View style={styles.brandText}>
@@ -136,4 +137,4 @@ const styles = StyleSheet.create({
   textSecondaryDark: { color: 'rgba(255,255,255,0.4)' },
 });
 
-export default Footer;
+export default memo(Footer);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
@@ -263,4 +263,4 @@ const styles = StyleSheet.create({
   textSecondaryDark: { color: 'rgba(255,255,255,0.55)' },
 });
 
-export default NutritionInfo;
+export default memo(NutritionInfo);

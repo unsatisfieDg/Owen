@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { StatusBar, Platform, KeyboardAvoidingView } from 'react-native';
+import { StatusBar, Platform, KeyboardAvoidingView, UIManager, LayoutAnimation } from 'react-native';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -254,6 +258,8 @@ function App() {
                       calculateNutrition={calculateNutrition}
                       darkMode={darkMode}
                       weeklyData={weeklyData}
+                      dailyLog={dailyLog}
+                      nutrition={nutrition}
                     />
                   )}
                 </Stack.Screen>

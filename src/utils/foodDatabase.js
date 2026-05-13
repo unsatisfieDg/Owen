@@ -209,6 +209,49 @@ export const FOOD_DATABASE = {
     { name: "Freekeh (cooked)", calories: 200, protein: 8, carbs: 40, fats: 1, category: "grains" },
     { name: "Triticale (cooked)", calories: 300, protein: 12, carbs: 64, fats: 2, category: "grains" },
     { name: "Job's Tears (cooked)", calories: 200, protein: 8, carbs: 40, fats: 1, category: "grains" }
+  ],
+
+  // 🇵🇭 Filipino Prepared Dishes
+  filipino_dishes: [
+    { name: "Pork Adobo", calories: 345, protein: 22, carbs: 5, fats: 25, category: "filipino_dishes" },
+    { name: "Chicken Adobo", calories: 250, protein: 24, carbs: 4, fats: 14, category: "filipino_dishes" },
+    { name: "Sinigang na Baboy (Pork Tamarind Soup)", calories: 215, protein: 18, carbs: 10, fats: 11, category: "filipino_dishes" },
+    { name: "Beef Bulalo", calories: 290, protein: 25, carbs: 4, fats: 18, category: "filipino_dishes" },
+    { name: "Lechon Kawali", calories: 420, protein: 20, carbs: 0, fats: 38, category: "filipino_dishes" },
+    { name: "Kare-Kare (Peanut Stew)", calories: 310, protein: 20, carbs: 12, fats: 22, category: "filipino_dishes" },
+    { name: "Pancit Canton", calories: 285, protein: 10, carbs: 45, fats: 8, category: "filipino_dishes" },
+    { name: "Sisig (Pork)", calories: 390, protein: 22, carbs: 5, fats: 32, category: "filipino_dishes" },
+    { name: "Tinola (Chicken Ginger Soup)", calories: 150, protein: 18, carbs: 6, fats: 6, category: "filipino_dishes" },
+    { name: "Lumpia Shanghai (3 pcs)", calories: 165, protein: 8, carbs: 12, fats: 9, category: "filipino_dishes" },
+    { name: "Tapsilog (Beef, Egg, Rice)", calories: 550, protein: 28, carbs: 65, fats: 20, category: "filipino_dishes" },
+    { name: "Longganisa (Pork Sausage, 2 pcs)", calories: 320, protein: 14, carbs: 12, fats: 24, category: "filipino_dishes" },
+    { name: "Bangus Silog (Milkfish, Egg, Rice)", calories: 480, protein: 26, carbs: 60, fats: 15, category: "filipino_dishes" },
+    { name: "Halo-Halo (Regular)", calories: 350, protein: 6, carbs: 65, fats: 8, category: "filipino_dishes" }
+  ],
+
+  // Fast Food & Snacks
+  fast_food: [
+    { name: "Cheeseburger", calories: 300, protein: 15, carbs: 33, fats: 12, category: "fast_food" },
+    { name: "French Fries (medium)", calories: 365, protein: 4, carbs: 48, fats: 17, category: "fast_food" },
+    { name: "Pizza (Cheese, 1 slice)", calories: 285, protein: 12, carbs: 36, fats: 10, category: "fast_food" },
+    { name: "Fried Chicken (1 pc)", calories: 320, protein: 18, carbs: 15, fats: 21, category: "fast_food" },
+    { name: "Ice Cream (Vanilla, 1 scoop)", calories: 137, protein: 2.3, carbs: 16, fats: 7, category: "fast_food" },
+    { name: "Potato Chips (1 oz)", calories: 152, protein: 2, carbs: 15, fats: 10, category: "fast_food" },
+    { name: "Chocolate Bar (Milk, 40g)", calories: 210, protein: 3, carbs: 24, fats: 12, category: "fast_food" },
+    { name: "Donut (Glazed)", calories: 260, protein: 3, carbs: 31, fats: 14, category: "fast_food" },
+    { name: "Hot Dog (with bun)", calories: 310, protein: 10, carbs: 24, fats: 18, category: "fast_food" }
+  ],
+
+  // Beverages
+  beverages: [
+    { name: "Coffee (Black, No Sugar)", calories: 2, protein: 0.3, carbs: 0, fats: 0, category: "beverages" },
+    { name: "Tea (Green, No Sugar)", calories: 2, protein: 0, carbs: 0, fats: 0, category: "beverages" },
+    { name: "Soda (Cola, 1 can)", calories: 140, protein: 0, carbs: 39, fats: 0, category: "beverages" },
+    { name: "Orange Juice (1 cup)", calories: 110, protein: 2, carbs: 26, fats: 0, category: "beverages" },
+    { name: "Apple Juice (1 cup)", calories: 114, protein: 0, carbs: 28, fats: 0, category: "beverages" },
+    { name: "Beer (12 oz)", calories: 153, protein: 1.6, carbs: 13, fats: 0, category: "beverages" },
+    { name: "Wine (Red, 5 oz)", calories: 125, protein: 0.1, carbs: 4, fats: 0, category: "beverages" },
+    { name: "Protein Shake (Whey + Water)", calories: 120, protein: 24, carbs: 3, fats: 1, category: "beverages" }
   ]
 };
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 
@@ -230,4 +230,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default NutritionCards;
+export default memo(NutritionCards);

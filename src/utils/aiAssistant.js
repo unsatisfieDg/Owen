@@ -13,54 +13,68 @@ const checkNetworkConnection = async () => {
   return true;
 };
 
-// ─── Tier 3: Filler Word Stripper ────────────────────────────────────────────
-// Removes common conversational phrases so the food name can be isolated.
+// ─── Natural Language Pre-Processing ─────────────────────────────────────────
+
 const FILLER_WORDS = [
   'i ate', 'i had', 'i just had', 'i just ate', 'i consumed', 'i drank',
-  'i drink', 'i eat', 'give me', 'log', 'add', 'track', 'record',
+  'i drink', 'i eat', 'give me', 'log', 'add', 'track', 'record', 'please',
   'for breakfast', 'for lunch', 'for dinner', 'for snack', 'for brunch',
   'at breakfast', 'at lunch', 'at dinner',
   'this morning', 'this evening', 'tonight', 'just now', 'earlier',
   'some', 'a bit of', 'a piece of', 'a portion of', 'a serving of',
   'about', 'around', 'roughly', 'approximately',
-  'and', 'with', 'plus',
+  'and', 'with', 'plus', 'of', 'the'
 ];
 
-const stripFillerWords = (text) => {
+const WORD_TO_NUM = {
+  'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+  'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+  'half': 0.5, 'quarter': 0.25, 'a': 1, 'an': 1
+};
+
+const cleanInput = (text) => {
   let cleaned = text.toLowerCase();
+  
+  // 1. Remove filler phrases
   for (const phrase of FILLER_WORDS) {
     cleaned = cleaned.replace(new RegExp(`\\b${phrase}\\b`, 'gi'), '');
   }
+  
+  // 2. Convert text numbers to digits ("one" -> 1, "half" -> 0.5)
+  for (const [word, num] of Object.entries(WORD_TO_NUM)) {
+    cleaned = cleaned.replace(new RegExp(`\\b${word}\\b`, 'gi'), num);
+  }
+  
+  // 3. Convert fractions to decimals ("1/2" -> "0.5")
+  cleaned = cleaned.replace(/(\d+)\/(\d+)/g, (match, n, d) => parseFloat(n) / parseFloat(d));
+  
   return cleaned.replace(/\s+/g, ' ').trim();
 };
 
-// ─── Tier 3: Portion-Size Synonym Map ────────────────────────────────────────
-// Maps common English portion descriptions → approximate grams.
-// Based on real-world dietary reference standards.
+// ─── Portion-Size Synonym Map ────────────────────────────────────────────────
 const PORTION_MAP = [
   { pattern: /\b(\d*\.?\d+)?\s*large\b/i,    grams: 150, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*medium\b/i,   grams: 100, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*small\b/i,    grams: 70,  default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*bowl\b/i,     grams: 250, default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*big bowl\b/i, grams: 400, default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*plate\b/i,    grams: 350, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*bowl[s]?\b/i, grams: 250, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*big bowl[s]?\b/i, grams: 400, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*plate[s]?\b/i, grams: 350, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*cup[s]?\b/i,  grams: 240, default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*glass\b/i,    grams: 250, default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*handful\b/i,  grams: 30,  default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*slice[s]?\b/i,grams: 28,  default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*piece[s]?\b/i,grams: 100, default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*scoop[s]?\b/i,grams: 35,  default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*glass(?:es)?\b/i, grams: 250, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*handful[s]?\b/i, grams: 30,  default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*slice[s]?\b/i, grams: 28,  default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*piece[s]?\b/i, grams: 100, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*scoop[s]?\b/i, grams: 35,  default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*tbsp\b/i,     grams: 15,  default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*tsp\b/i,      grams: 5,   default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*oz\b/i,       grams: 28.35,default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*can\b/i,      grams: 400, default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*bottle\b/i,   grams: 500, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*can[s]?\b/i,  grams: 400, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*bottle[s]?\b/i, grams: 500, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*egg[s]?\b/i,  grams: 60,  default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*banana[s]?\b/i,grams: 120,default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*apple[s]?\b/i,grams: 182, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*banana[s]?\b/i, grams: 120, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*apple[s]?\b/i, grams: 182, default: 1 },
 ];
 
-// Extract portion size from Tier 3 text using synonym map
 const extractPortionFromSynonyms = (text) => {
   for (const entry of PORTION_MAP) {
     const match = text.match(entry.pattern);
@@ -72,12 +86,10 @@ const extractPortionFromSynonyms = (text) => {
   return { grams: 100, matched: false };
 };
 
-// ─── Tier 3: Multiplied item parser ──────────────────────────────────────────
-// Handles patterns like "3 eggs", "2 bananas", "4 slices of bread"
 const extractMultipliedItems = (text) => {
-  const match = text.match(/(\d+)\s+([a-zA-Z\s]+)/);
+  const match = text.match(/(\d+(?:\.\d+)?)\s+([a-zA-Z\s]+)/);
   if (match) {
-    const count = parseInt(match[1], 10);
+    const count = parseFloat(match[1]);
     const item = match[2].trim();
     return { count, item };
   }
@@ -96,7 +108,11 @@ export const processNaturalLanguageFood = async (text, customFoods = [], searchS
   const isOnline = await checkNetworkConnection();
 
   let processedOnDevice = false;
-  let foodName = text;
+  
+  // Clean the input to standardise numbers and remove fillers early
+  let cleanedText = cleanInput(text);
+  
+  let foodName = cleanedText;
   let amount = 100;
   let unit = 'g';
   let confidence = 0;
@@ -105,24 +121,28 @@ export const processNaturalLanguageFood = async (text, customFoods = [], searchS
   // ── Tier 1: On-Device Regex NLP ──────────────────────────────────────────
   if (isDeviceCapable) {
     const regexPatterns = [
-      /(\d+(?:\.\d+)?)\s*(g|grams|oz|ml|cups?|tbsp|tsp|pieces?|large|small)?\s+(?:of\s+)?([a-zA-Z\s]+)/i,
-      /([a-zA-Z\s]+)\s+(\d+(?:\.\d+)?)\s*(g|grams|oz|ml|cups?|tbsp|tsp|pieces?|large|small)?/i,
+      // Pattern 1: Amount Unit Food (e.g., "1.5 cups rice", "100 g chicken")
+      /(\d+(?:\.\d+)?)\s*(g|grams|oz|ml|cups?|tbsp|tsp|pieces?|slices?|large|small|medium|bowl|glass)?\s+([a-zA-Z\s]+)/i,
+      // Pattern 2: Food Amount Unit (e.g., "rice 1.5 cups", "chicken 100g")
+      /([a-zA-Z\s]+)\s+(\d+(?:\.\d+)?)\s*(g|grams|oz|ml|cups?|tbsp|tsp|pieces?|slices?|large|small|medium|bowl|glass)?/i,
     ];
 
     for (const regex of regexPatterns) {
-      const match = text.match(regex);
+      const match = cleanedText.match(regex);
       if (match) {
         if (isNaN(parseFloat(match[1]))) {
+          // Matched Pattern 2
           foodName = match[1].trim();
           amount = parseFloat(match[2]);
           unit = match[3] ? match[3].toLowerCase() : 'g';
         } else {
+          // Matched Pattern 1
           amount = parseFloat(match[1]);
           unit = match[2] ? match[2].toLowerCase() : 'g';
           foodName = match[3].trim();
         }
         processedOnDevice = true;
-        confidence = 0.85;
+        confidence = 0.90; // Boosted confidence due to pre-cleaning
         tier = 1;
         break;
       }
@@ -130,43 +150,41 @@ export const processNaturalLanguageFood = async (text, customFoods = [], searchS
   }
 
   // ── Tier 2: Cloud AI Fallback ─────────────────────────────────────────────
+  // We only hit Cloud fallback if regex failed completely or confidence is low, and we're online.
   if (!processedOnDevice || confidence < 0.7) {
     if (isOnline) {
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      const numMatch = text.match(/(\d+)/);
+      // Simulate network delay for cloud AI processing
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const numMatch = cleanedText.match(/(\d+(?:\.\d+)?)/);
       if (numMatch) amount = parseFloat(numMatch[1]);
-      foodName = text
-        .replace(/i ate|i had|give me|log|add|some|a|for|breakfast|lunch|dinner|snack/gi, '')
-        .replace(/[0-9]+/g, '')
-        .trim();
+      
+      foodName = cleanedText.replace(/[0-9.]+/g, '').trim();
+      
       processedOnDevice = false;
       confidence = 0.95;
       tier = 2;
     } else {
       // ── Tier 3: Smart Keyword Engine (Budget / Fully Offline) ───────────
-      // Step 1: Strip filler conversational words
-      let cleaned = stripFillerWords(text);
-
-      // Step 2: Try multiplied-item parsing ("3 eggs", "2 slices of bread")
-      const multiplied = extractMultipliedItems(cleaned);
+      
+      // Try multiplied-item parsing ("3 eggs", "0.5 bananas")
+      const multiplied = extractMultipliedItems(cleanedText);
       if (multiplied) {
         foodName = multiplied.item;
-        amount = multiplied.count * 100; // rough fallback
-      } else {
-        foodName = cleaned;
+        amount = multiplied.count * 100; // rough fallback to 100g base
       }
 
-      // Step 3: Extract serving size from portion synonym map
-      const portion = extractPortionFromSynonyms(text);
+      // Extract serving size from portion synonym map
+      const portion = extractPortionFromSynonyms(cleanedText);
       if (portion.matched) {
         amount = portion.grams;
       }
 
-      // Step 4: Strip numeric leftovers from the food name
-      foodName = foodName.replace(/\d+/g, '').replace(/\s+/g, ' ').trim();
+      // Strip numeric leftovers from the food name
+      foodName = foodName.replace(/\d+(?:\.\d+)?/g, '').replace(/\s+/g, ' ').trim();
 
       processedOnDevice = true;
-      confidence = portion.matched ? 0.65 : 0.45;
+      confidence = portion.matched ? 0.75 : 0.50;
       tier = 3;
     }
   }
@@ -177,13 +195,15 @@ export const processNaturalLanguageFood = async (text, customFoods = [], searchS
   else if (unit.includes('cup'))  servingInGrams = amount * 240;
   else if (unit.includes('tbsp')) servingInGrams = amount * 15;
   else if (unit.includes('tsp'))  servingInGrams = amount * 5;
-  else if (unit.includes('piece') || unit === 'large' || unit === 'small') {
+  else if (unit.includes('piece') || unit.includes('slice') || unit === 'large' || unit === 'small' || unit === 'medium') {
     servingInGrams = amount * 100;
+  } else if (unit.includes('bowl') || unit.includes('glass')) {
+    servingInGrams = amount * 250;
   }
 
   // ── Database Query ────────────────────────────────────────────────────────
   let results = [];
-  if (searchSQLite) {
+  if (searchSQLite && foodName.length >= 2) {
     const sqliteResults = await searchSQLite(foodName);
     results = [...results, ...sqliteResults];
   }
@@ -209,7 +229,7 @@ export const processNaturalLanguageFood = async (text, customFoods = [], searchS
   const sourceLabel = {
     1: 'On-Device AI (Local NLP)',
     2: 'Cloud AI (Server Model)',
-    3: confidence >= 0.6
+    3: confidence >= 0.7
       ? 'On-Device Basic (Smart Keywords)'
       : 'On-Device Basic (Keyword Fallback)',
   }[tier];

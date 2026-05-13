@@ -5,11 +5,15 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/owen_icon_white.png",
     "splash": {
       "image": "./assets/owen_icon_white.png",
       "resizeMode": "contain",
       "backgroundColor": "#0f766e"
     },
+    "assetBundlePatterns": [
+      "assets/**"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.owen.app",
@@ -17,6 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/owen_icon_white.png",
         "backgroundColor": "#0f766e"
       },
       "package": "com.owen.app",

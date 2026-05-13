@@ -5,148 +5,148 @@
 
 const RECIPE_DATABASE = [
   {
-    name: "Grilled Chicken & Quinoa Bowl",
-    calories: 450, protein: 45, carbs: 40, fats: 10,
-    ingredients: ["150g Chicken Breast", "100g Cooked Quinoa", "50g Spinach", "5g Olive Oil"],
-    instructions: "Grill chicken, mix with quinoa and spinach, drizzle with oil."
-  },
-  {
     name: "Classic Protein Oats",
     calories: 380, protein: 30, carbs: 45, fats: 8,
-    ingredients: ["50g Oats", "1 scoop Whey Protein", "10g Almonds", "100ml Milk"],
+    category: "Budget",
+    ingredients: [
+      "50g Rolled Oats (190kcal, 5g P, 34g C, 3g F)", 
+      "30g Whey Protein (120kcal, 24g P, 3g C, 1g F)", 
+      "10g Almonds (60kcal, 2g P, 2g C, 5g F)", 
+      "100ml Non-Fat Milk (35kcal, 3g P, 5g C, 0g F)"
+    ],
     instructions: "Cook oats in milk, stir in protein powder once off heat, top with almonds."
-  },
-  {
-    name: "Budget Tuna & Rice",
-    calories: 420, protein: 35, carbs: 50, fats: 5,
-    ingredients: ["1 can Tuna in Water", "150g White Rice", "Soy Sauce", "Green Onions"],
-    instructions: "Mix drained tuna with hot rice and soy sauce. Cheap and high protein!"
   },
   {
     name: "Filipino Chicken Adobo",
     calories: 480, protein: 40, carbs: 30, fats: 15,
     category: "Filipino",
-    ingredients: ["200g Chicken Thighs", "Soy Sauce", "Vinegar", "Garlic", "1 cup Brown Rice"],
+    ingredients: [
+      "200g Chicken Thigh, skinless (240kcal, 38g P, 0g C, 9g F)", 
+      "150g White Rice (195kcal, 4g P, 43g C, 0g F)",
+      "30ml Soy Sauce & Vinegar Mix (25kcal, 2g P, 4g C, 0g F)", 
+      "5g Garlic & Olive Oil (45kcal, 0g P, 1g C, 5g F)"
+    ],
     instructions: "Simmer chicken in soy sauce, vinegar, and garlic. Serve over rice."
   },
   {
     name: "Bistek Tagalog (Beef Steak)",
-    calories: 450, protein: 45, carbs: 10, fats: 25,
+    calories: 450, protein: 45, carbs: 40, fats: 12,
     category: "Filipino",
-    ingredients: ["150g Lean Beef", "Soy Sauce", "Calamansi", "Onion Rings"],
+    ingredients: [
+      "150g Lean Beef Sirloin (270kcal, 43g P, 0g C, 9g F)", 
+      "100g White Rice (130kcal, 3g P, 28g C, 0g F)",
+      "20ml Soy Sauce & Calamansi (15kcal, 1g P, 3g C, 0g F)", 
+      "50g Onion Rings (20kcal, 0g P, 5g C, 0g F)"
+    ],
     instructions: "Marinate beef in soy and calamansi. Pan-sear and top with sautéed onion rings."
   },
   {
-    name: "Ginisang Monggo (Mung Beans)",
-    calories: 320, protein: 22, carbs: 45, fats: 6,
-    category: "Filipino",
-    ingredients: ["100g Mung Beans", "50g Spinach", "20g Tinapa (Smoked Fish)"],
-    instructions: "Boil monggo until soft, sauté with garlic and tinapa, add spinach at the end."
+    name: "Budget Tuna & Rice Bowl",
+    calories: 420, protein: 35, carbs: 50, fats: 5,
+    category: "Budget",
+    ingredients: [
+      "150g Canned Tuna in Water (130kcal, 28g P, 0g C, 1g F)", 
+      "150g White Rice (195kcal, 4g P, 43g C, 0g F)", 
+      "15g Light Mayo (40kcal, 0g P, 2g C, 4g F)", 
+      "10g Seaweed/Nori (15kcal, 1g P, 2g C, 0g F)"
+    ],
+    instructions: "Mix drained tuna with light mayo. Serve over hot rice and top with crushed seaweed."
   },
   {
     name: "Tortang Talong (Eggplant Omelette)",
     calories: 310, protein: 18, carbs: 15, fats: 20,
     category: "Filipino",
-    ingredients: ["1 Large Eggplant", "2 Large Eggs", "50g Ground Lean Pork"],
-    instructions: "Grill eggplant, peel, flatten, and dip in beaten eggs with meat. Pan-fry."
+    ingredients: [
+      "100g Large Eggplant (25kcal, 1g P, 6g C, 0g F)", 
+      "100g (2 Large) Eggs (140kcal, 12g P, 1g C, 10g F)", 
+      "50g Ground Lean Pork (120kcal, 10g P, 0g C, 8g F)",
+      "5g Cooking Oil (45kcal, 0g P, 0g C, 5g F)"
+    ],
+    instructions: "Roast and peel eggplant. Flatten and dip in beaten egg with cooked ground pork. Pan-fry until golden."
   },
   {
-    name: "Pork Sinigang (Lean)",
-    calories: 400, protein: 35, carbs: 20, fats: 18,
+    name: "Chicken Inasal (Bacolod Style)",
+    calories: 380, protein: 42, carbs: 12, fats: 16,
     category: "Filipino",
-    ingredients: ["150g Lean Pork", "Tamarind Base", "Kangkong", "Radish", "Sitaw"],
-    instructions: "Boil pork until tender, add tamarind and vegetables for a sour, healthy soup."
+    ingredients: [
+      "200g Chicken Leg/Thigh, skin off (240kcal, 38g P, 0g C, 9g F)", 
+      "10g Lemongrass & Garlic (15kcal, 0g P, 3g C, 0g F)", 
+      "20ml Vinegar (5kcal, 0g P, 1g C, 0g F)", 
+      "10g Annatto Oil (90kcal, 0g P, 0g C, 10g F)"
+    ],
+    instructions: "Marinate chicken in lemongrass and vinegar, grill while basting with annatto oil."
   },
   {
-    name: "Chicken Tinola",
-    calories: 320, protein: 38, carbs: 10, fats: 12,
+    name: "Sardine Pasta Aglio e Olio",
+    calories: 430, protein: 26, carbs: 55, fats: 14,
+    category: "Budget",
+    ingredients: [
+      "100g Spanish Sardines in Olive Oil (180kcal, 20g P, 0g C, 11g F)", 
+      "75g Dry Pasta (270kcal, 9g P, 56g C, 1g F)", 
+      "10g Garlic (15kcal, 1g P, 3g C, 0g F)", 
+      "5g Olive Oil (45kcal, 0g P, 0g C, 5g F)"
+    ],
+    instructions: "Cook pasta. Sauté garlic and chili in a little sardine oil, toss with pasta and flaked sardines."
+  },
+  {
+    name: "Ginisang Monggo (Mung Beans)",
+    calories: 320, protein: 22, carbs: 45, fats: 6,
     category: "Filipino",
-    ingredients: ["200g Chicken", "Ginger", "Sayote", "Malunggay Leaves"],
-    instructions: "Sauté ginger and chicken, add water and simmer with sayote and malunggay."
+    ingredients: [
+      "100g Dry Mung Beans (350kcal, 24g P, 63g C, 1g F) *Split 2 servings*", 
+      "50g Spinach (10kcal, 1g P, 2g C, 0g F)", 
+      "20g Tinapa / Smoked Fish (40kcal, 8g P, 0g C, 1g F)",
+      "5g Oil (45kcal, 0g P, 0g C, 5g F)"
+    ],
+    instructions: "Boil monggo until soft, sauté with garlic and tinapa, add spinach at the end."
   },
   {
-    name: "Ginisang Sardinas with Egg",
-    calories: 280, protein: 24, carbs: 5, fats: 18,
-    category: "Budget",
-    ingredients: ["1 can Sardines in Tomato Sauce", "1 Large Egg", "Garlic", "Onion"],
-    instructions: "Sauté garlic/onion, add sardines and stir in an egg until cooked. Very cheap protein!"
-  },
-  {
-    name: "Corned Beef & Potato Hash",
-    calories: 410, protein: 28, carbs: 35, fats: 20,
-    category: "Budget",
-    ingredients: ["100g Canned Corned Beef", "1 medium Potato", "Onion"],
-    instructions: "Dice potato and fry until soft, add corned beef and sauté until crispy."
-  },
-  {
-    name: "Student Soy-Egg Rice",
-    calories: 350, protein: 14, carbs: 45, fats: 12,
-    category: "Budget",
-    ingredients: ["2 Fried Eggs", "150g White Rice", "Soy Sauce", "Sesame Oil"],
-    instructions: "Place fried eggs over hot rice, add soy sauce and a drop of sesame oil."
-  },
-  {
-    name: "Genius Ramen Upgrade",
-    calories: 450, protein: 20, carbs: 60, fats: 15,
-    category: "Budget",
-    ingredients: ["1 pack Instant Noodles", "1 Soft Boiled Egg", "Handful of Spinach"],
-    instructions: "Cook noodles with half the seasoning. Add spinach and a soft boiled egg for protein."
-  },
-  {
-    name: "Lean Kare-Kare",
-    calories: 520, protein: 42, carbs: 15, fats: 35,
+    name: "Pork Sinigang (Lean Cut)",
+    calories: 390, protein: 35, carbs: 20, fats: 15,
     category: "Filipino",
-    ingredients: ["150g Lean Beef", "Peanut Sauce", "Bok Choy", "Eggplant", "Sitaw"],
-    instructions: "Boil beef until tender. Sauté with peanut sauce and vegetables. Serve with a touch of bagoong."
+    ingredients: [
+      "150g Lean Pork Tenderloin (210kcal, 32g P, 0g C, 9g F)", 
+      "50g Kangkong / Water Spinach (10kcal, 1g P, 2g C, 0g F)",
+      "100g Radish & Eggplant (25kcal, 1g P, 5g C, 0g F)",
+      "80g White Rice (105kcal, 2g P, 23g C, 0g F)"
+    ],
+    instructions: "Boil pork until tender, add tamarind broth and vegetables. Serve with rice."
   },
   {
-    name: "Healthy Pinakbet",
-    calories: 280, protein: 20, carbs: 25, fats: 12,
+    name: "Tofu Sisig (Vegetarian)",
+    calories: 340, protein: 24, carbs: 25, fats: 16,
     category: "Filipino",
-    ingredients: ["50g Lean Pork", "Pumpkin", "Okra", "Eggplant", "Ampalaya"],
-    instructions: "Sauté pork then add squash and other vegetables. Simmer in a little water and bagoong."
+    ingredients: [
+      "200g Firm Tofu (180kcal, 20g P, 4g C, 10g F)", 
+      "15g Light Mayo (40kcal, 0g P, 2g C, 4g F)", 
+      "20g Onions & Chili (10kcal, 0g P, 2g C, 0g F)",
+      "80g White Rice (105kcal, 2g P, 23g C, 0g F)"
+    ],
+    instructions: "Air-fry or bake diced tofu. Mix with light mayo, onions, calamansi, and chili. Serve over rice."
   },
   {
-    name: "Arroz Caldo (Protein Style)",
-    calories: 380, protein: 32, carbs: 40, fats: 10,
-    category: "Filipino",
-    ingredients: ["150g Chicken", "1/2 cup Rice", "2 Hard Boiled Eggs", "Ginger"],
-    instructions: "Cook rice porridge with plenty of ginger and chicken. Top with two eggs for extra protein."
+    name: "Beef & Broccoli Stir Fry",
+    calories: 410, protein: 38, carbs: 35, fats: 14,
+    category: "High Protein",
+    ingredients: [
+      "150g Lean Beef Strips (250kcal, 35g P, 0g C, 10g F)", 
+      "150g Broccoli Florets (50kcal, 4g P, 10g C, 0g F)", 
+      "100g White Rice (130kcal, 3g P, 28g C, 0g F)", 
+      "15ml Oyster Sauce (15kcal, 0g P, 4g C, 0g F)"
+    ],
+    instructions: "Stir fry beef until brown. Add broccoli and oyster sauce with a splash of water, cover to steam."
   },
   {
-    name: "Fish Cardillo",
-    calories: 340, protein: 30, carbs: 5, fats: 22,
-    category: "Filipino",
-    ingredients: ["150g White Fish", "2 Eggs", "2 Tomatoes", "Onions"],
-    instructions: "Pan-fry fish. Sauté tomatoes and onions, add beaten eggs, then gently fold in the fish."
-  },
-  {
-    name: "Budget Tuna Sandwich",
-    calories: 320, protein: 26, carbs: 30, fats: 12,
+    name: "Egg & Tomato Rice Bowl",
+    calories: 360, protein: 16, carbs: 48, fats: 12,
     category: "Budget",
-    ingredients: ["1 can Tuna", "2 slices Bread", "1 tbsp Mayo", "Onions"],
-    instructions: "Mix tuna with mayo and onions. Spread on bread. Simple and effective."
-  },
-  {
-    name: "Scrambled Mushroom & Eggs",
-    calories: 290, protein: 18, carbs: 10, fats: 20,
-    category: "Budget",
-    ingredients: ["3 Eggs", "1 small can Mushrooms", "Garlic"],
-    instructions: "Sauté mushrooms in garlic until brown. Add eggs and scramble. High volume, low cost."
-  },
-  {
-    name: "Beans on Toast (High Fiber)",
-    calories: 350, protein: 16, carbs: 55, fats: 5,
-    category: "Budget",
-    ingredients: ["1 can Baked Beans", "2 slices Whole Wheat Bread"],
-    instructions: "Heat beans and pour over toasted bread. A complete student classic."
-  },
-  {
-    name: "Peanut Butter Study Toast",
-    calories: 280, protein: 10, carbs: 30, fats: 15,
-    category: "Budget",
-    ingredients: ["2 slices Whole Wheat Bread", "2 tbsp Peanut Butter", "1 small Banana"],
-    instructions: "Spread peanut butter on toast and top with banana slices."
+    ingredients: [
+      "100g (2 Large) Eggs (140kcal, 12g P, 1g C, 10g F)", 
+      "150g Tomatoes (25kcal, 1g P, 6g C, 0g F)", 
+      "150g White Rice (195kcal, 4g P, 43g C, 0g F)", 
+      "5g Cooking Oil (45kcal, 0g P, 0g C, 5g F)"
+    ],
+    instructions: "Scramble eggs and set aside. Sauté tomatoes until soft, mix eggs back in. Serve over hot rice."
   }
 ];
 
@@ -180,12 +180,14 @@ export const suggestMeal = (nutrition, dailyLog, keyword = '') => {
   });
 
   // Sort by how well they fill the protein gap
-  const suggestions = (fittingRecipes.length > 0 ? fittingRecipes : pool)
+  const sorted = (fittingRecipes.length > 0 ? fittingRecipes : pool)
     .sort((a, b) => {
       const aScore = Math.abs(a.protein - remProtein);
       const bScore = Math.abs(b.protein - remProtein);
       return aScore - bScore;
     });
 
-  return suggestions[0];
+  // Pick randomly from the top 3 best fits to ensure variety
+  const topN = sorted.slice(0, 3);
+  return topN[Math.floor(Math.random() * topN.length)];
 };

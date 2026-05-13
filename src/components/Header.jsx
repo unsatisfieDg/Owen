@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   View,
   Text,
@@ -135,7 +135,7 @@ const Header = ({
       {/* ── Mascot + Speech Bubble ── */}
       <View style={styles.mascotRow}>
         <TouchableOpacity onPress={onMascotPress} activeOpacity={0.8} style={styles.mascotTouch}>
-          <OwenMascot size={isSmallScreen ? 180 : 200} isHappy={isHappy} />
+          <OwenMascot size={isSmallScreen ? 180 : 200} isHappy={isHappy} darkMode={darkMode} />
         </TouchableOpacity>
 
         {/* Speech bubble */}
@@ -325,4 +325,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Header;
+export default memo(Header);

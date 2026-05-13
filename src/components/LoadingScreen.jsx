@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Easing,
   Image,
+  useColorScheme,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import OwenMascot from './OwenMascot';
@@ -59,9 +60,12 @@ const LoadingScreen = () => {
     };
   }, []);
 
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+
   return (
     <LinearGradient
-      colors={['#0d9488', '#0f766e', '#134e4a']}
+      colors={isDark ? ['#1a1a1a', '#0f0f0f', '#000000'] : ['#0d9488', '#0f766e', '#134e4a']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.container}

@@ -87,7 +87,7 @@ owen/
 - [x] Hybrid AI Assistant (On-device + Cloud)
 - [x] Meal planning and recipe suggestions (25+ Pinoy & Budget recipes)
 - [x] Data export (CSV)
-- [ ] Social sharing features
+- [x] Social sharing features
 
 ## License
 This project is licensed under the MIT License.

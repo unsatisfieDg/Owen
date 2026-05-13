@@ -10,6 +10,8 @@ import Footer from './Footer';
 import CompletionModal from './CompletionModal';
 import AIAssistantModal from './AIAssistantModal';
 import { useCompletionTracking } from '../hooks/useCompletionTracking';
+import * as Haptics from 'expo-haptics';
+import { LayoutAnimation } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -204,13 +206,29 @@ const Dashboard = ({
         {/* Food Tracker */}
         <FoodTracker 
           dailyLog={dailyLog}
-          setDailyLog={setDailyLog}
+          setDailyLog={(newLog) => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            if (typeof newLog === 'function') {
+              setDailyLog((prev) => {
+                const nextState = newLog(prev);
+                if (nextState.foods.length > prev.foods.length) {
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                }
+                return nextState;
+              });
+            } else {
+              setDailyLog(newLog);
+            }
+          }}
           nutrition={nutrition}
           darkMode={darkMode}
           onInputFocus={handleInputFocus}
           onInputBlur={handleInputBlur}
           user={user}
-          onOpenAI={() => setShowAIAssistant(true)}
+          onOpenAI={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setShowAIAssistant(true);
+          }}
         />
 
         {/* Footer */}

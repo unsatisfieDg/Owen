@@ -126,21 +126,26 @@ export const calculateMacros = (tdee, goal, userData = {}, profile = {}) => {
     calorieAdjustment = description;
   }
   
-  // Calculate macros in grams (ONLY protein and carbs - NO FATS)
+  // Calculate macros in grams
   const protein = Math.round(weightLbs * proteinGPerLb);
   
-  // Calculate carbs to fill remaining calories after protein
+  // Calculate fat (default 25% of total calories)
+  // Fat = 9 cal/g
+  const fatCalories = calories * 0.25;
+  const fats = Math.round(fatCalories / 9);
+  
+  // Calculate carbs to fill remaining calories after protein and fat
   // Protein = 4 cal/g, Carbs = 4 cal/g
   const proteinCalories = protein * 4;
-  const remainingCalories = calories - proteinCalories;
-  const carbs = Math.round(remainingCalories / 4);
+  const remainingCalories = calories - proteinCalories - fatCalories;
+  const carbs = Math.round(Math.max(0, remainingCalories) / 4);
   
   return {
     tdee: calories, // Use the lb-based calculation
     bmr: tdee, // Keep original bmr
     protein: protein,
     carbs: carbs,
-    fats: 0, // No fats tracked
+    fats: fats,
     proteinGPerLb: proteinGPerLb.toFixed(1),
     carbsGPerLb: (carbs / weightLbs).toFixed(1),
     proteinPercent: proteinPercent,

@@ -15,6 +15,8 @@ import {
   KeyboardAvoidingView,
   Image
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { searchFoodDatabase } from '../utils/foodDatabase';
@@ -51,6 +53,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
   const [isLoadingBarcode, setIsLoadingBarcode] = useState(false);
   const [scannedProduct, setScannedProduct] = useState(null);
   const [showScannerPreview, setShowScannerPreview] = useState(false);
+  const [scannedBarcode, setScannedBarcode] = useState(null);
 
   // AI Assistant state
   const [showAIAssistant, setShowAIAssistant] = useState(false);
@@ -171,6 +174,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
   };
 
   const handleSelectFood = (food) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelectedFood(food);
   };
 
@@ -276,6 +280,10 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
   const handleBarCodeScanned = async ({ type, data }) => {
     setScanned(true);
     setIsLoadingBarcode(true);
+    if (scannedBarcode !== data) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setScannedBarcode(data);
+    }
     
     try {
       const productData = await fetchBarcodeData(data);
@@ -354,9 +362,6 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
       style={[styles.container, darkMode && styles.containerDark]}
       onLayout={() => {}}
       collapsable={false}
-      removeClippedSubviews={false}
-      onStartShouldSetResponder={() => true}
-      onMoveShouldSetResponder={() => false}
     >
       <View style={styles.header}>
         <Icon name="food-apple" size={24} color="#10b981" />
@@ -395,7 +400,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
         </TouchableOpacity>
 
         {/* Search Bar */}
-        <View style={styles.searchContainer} collapsable={false} onStartShouldSetResponder={() => true}>
+        <View style={styles.searchContainer} collapsable={false}>
         <View style={styles.searchInputContainer}>
           <Icon name="magnify" size={20} color="#9ca3af" />
           <TextInput
@@ -477,7 +482,11 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
 
         {/* Live Search Results */}
         {liveResults.length > 0 && !showResults && (
-          <View style={styles.liveResults}>
+          <ScrollView 
+            style={styles.liveResults} 
+            keyboardShouldPersistTaps="handled" 
+            nestedScrollEnabled={true}
+          >
             {liveResults.map((food, idx) => (
               <TouchableOpacity
                 key={idx}
@@ -494,7 +503,7 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
                 <Text style={styles.liveResultMacro}>{food.calories} cal</Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
         )}
       </View>
 
