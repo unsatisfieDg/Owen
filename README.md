@@ -1,4 +1,4 @@
-# MacroGenius - React Native
+# Owen - React Native
 
 Track your nutrition to achieve your health and fitness goals. This is a native mobile app built for both iOS and Android.
 
@@ -44,8 +44,8 @@ Track your nutrition to achieve your health and fitness goals. This is a native 
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/unsatisfieDg/MacroGenius.git
-cd MacroGenius
+git clone https://github.com/unsatisfieDg/Owen.git
+cd Owen
 
 # Install dependencies
 npm install
@@ -61,7 +61,7 @@ npm start
 
 ## Project Structure
 ```
-macrogenius/
+owen/
 ├── App.js                      # Main application logic
 ├── src/
 │   ├── components/             # UI components
@@ -97,4 +97,4 @@ This project is licensed under the MIT License.
 - The Expo and React Native communities.
 
 ---
-**Developed to help users take control of their nutrition and fitness with MacroGenius.**
+**Developed to help users take control of their nutrition and fitness with Owen.**
