@@ -29,12 +29,6 @@ const Footer = ({ darkMode }) => {
             Your personal nutrition buddy
           </Text>
         </View>
-        <TouchableOpacity
-          style={[styles.githubBtn, darkMode && styles.githubBtnDark]}
-          onPress={() => Linking.openURL('https://github.com/unsatisfieDg')}
-        >
-          <Icon name="github" size={18} color={darkMode ? '#9ca3af' : '#6b7280'} />
-        </TouchableOpacity>
       </View>
 
       {/* Divider */}
@@ -98,17 +92,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#9ca3af',
     marginTop: 1,
-  },
-  githubBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#f3f4f6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  githubBtnDark: {
-    backgroundColor: '#262626',
   },
   divider: {
     height: 1,

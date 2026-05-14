@@ -140,17 +140,7 @@ function App() {
     saveWeeklyData();
   }, [user, weeklyData]);
 
-  // Background Cloud Syncing for Coach Access
-  useEffect(() => {
-    const syncDataToCoach = async () => {
-      const isOnline = true;
-      if (isOnline && user && dailyLog.foods.length > 0) {
-        // Silently sync progress to coach in background
-        await new Promise(resolve => setTimeout(resolve, 800));
-      }
-    };
-    syncDataToCoach();
-  }, [dailyLog.foods.length]);
+
 
   const { nutrition, calculateNutrition } = useNutrition(userData, profile);
 

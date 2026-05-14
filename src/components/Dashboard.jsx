@@ -260,6 +260,7 @@ const Dashboard = ({
         user={user}
         nutrition={nutrition}
         dailyLog={dailyLog}
+        darkMode={darkMode}
       />
     </SafeAreaView>
   );

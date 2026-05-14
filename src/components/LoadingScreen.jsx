@@ -63,27 +63,31 @@ const LoadingScreen = () => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
+  // Use app's background colors
+  const bgColor = isDark ? '#0f0f0f' : '#f8f9fa';
+  const brandColor = '#0f766e';
+  const dotColor = isDark ? '#14b8a6' : '#0d9488';
+
   return (
-    <LinearGradient
-      colors={isDark ? ['#1a1a1a', '#0f0f0f', '#000000'] : ['#0d9488', '#0f766e', '#134e4a']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
+    <View style={styles.container}>
+      <LinearGradient
+        colors={isDark ? ['#0a0a0a', '#134e4a', '#06201e'] : ['#f0fdfa', '#ccfbf1', '#99f6e4']}
+        style={StyleSheet.absoluteFill}
+      />
       <Animated.View style={[styles.content, { opacity: fadeIn }]}>
         {/* Mascot */}
         <View style={styles.mascotWrapper}>
           <Image 
             source={require('../../assets/owen_icon_white.png')} 
-            style={{ width: 120, height: 120 }} 
+            style={{ width: 140, height: 140, tintColor: isDark ? '#2dd4bf' : '#0d9488' }} 
             resizeMode="contain" 
             fadeDuration={0}
           />
         </View>
 
         {/* Brand */}
-        <Text style={styles.appName}>Owen</Text>
-        <Text style={styles.tagline}>Your personal nutrition buddy</Text>
+        <Text style={[styles.appName, { color: isDark ? '#fff' : '#134e4a' }]}>MacroGenius</Text>
+        <Text style={[styles.tagline, { color: isDark ? '#94a3b8' : '#0f766e' }]}>Owen is preparing your nutrition data...</Text>
 
         {/* Bouncing dots */}
         <View style={styles.dotsRow}>
@@ -93,16 +97,15 @@ const LoadingScreen = () => {
               style={[
                 styles.dot,
                 { transform: [{ translateY: dot }] },
-                i === 1 && { backgroundColor: '#5eead4' },
-                i === 2 && { backgroundColor: '#2dd4bf' },
+                { backgroundColor: i === 0 ? '#10b981' : i === 1 ? '#34d399' : '#6ee7b7' }
               ]}
             />
           ))}
         </View>
 
-        <Text style={styles.loadingText}>Loading your data...</Text>
+        <Text style={[styles.loadingText, { color: isDark ? '#64748b' : '#9ca3af' }]}>Hybrid AI & Offline DB Syncing</Text>
       </Animated.View>
-    </LinearGradient>
+    </View>
   );
 };
 
@@ -116,40 +119,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mascotWrapper: {
-    marginBottom: 8,
+    marginBottom: 12,
   },
   appName: {
-    fontSize: 38,
+    fontSize: 42,
     fontWeight: '900',
-    color: '#fff',
-    letterSpacing: -1,
-    textShadowColor: 'rgba(0,0,0,0.2)',
+    letterSpacing: -1.5,
+    textShadowColor: 'rgba(0,0,0,0.05)',
     textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
+    textShadowRadius: 4,
   },
   tagline: {
-    fontSize: 15,
-    color: 'rgba(255,255,255,0.75)',
-    marginTop: 4,
-    marginBottom: 36,
+    fontSize: 16,
+    marginTop: 2,
+    marginBottom: 40,
     fontWeight: '500',
   },
   dotsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 12,
+    gap: 12,
+    marginBottom: 16,
   },
   dot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#ccfbf1',
   },
   loadingText: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.6)',
-    fontWeight: '500',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 });
 

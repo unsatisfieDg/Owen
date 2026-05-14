@@ -40,6 +40,18 @@ export const FOOD_DATABASE = {
     { name: "Squid (Calamari)", calories: 92, protein: 16, carbs: 3, fats: 1.4, category: "protein" },
     { name: "Octopus", calories: 82, protein: 15, carbs: 2.2, fats: 1, category: "protein" },
     { name: "Herring", calories: 203, protein: 23, carbs: 0, fats: 12, category: "protein" },
+    { name: "Beef Steak (Ribeye)", calories: 291, protein: 24, carbs: 0, fats: 22, category: "protein" },
+    { name: "Turkey Bacon", calories: 382, protein: 29, carbs: 3, fats: 28, category: "protein" },
+    { name: "Pork Sausage", calories: 339, protein: 14, carbs: 1, fats: 31, category: "protein" },
+    { name: "Edamame (cooked)", calories: 121, protein: 12, carbs: 9, fats: 5, category: "protein" },
+    { name: "Chicken Thigh (skinless)", calories: 209, protein: 26, carbs: 0, fats: 11, category: "protein" },
+    { name: "Lamb Chop", calories: 294, protein: 25, carbs: 0, fats: 21, category: "protein" },
+    { name: "Venison", calories: 158, protein: 30, carbs: 0, fats: 3.2, category: "protein" },
+    { name: "Tempeh", calories: 193, protein: 19, carbs: 9, fats: 11, category: "protein" },
+    { name: "Seitan", calories: 104, protein: 21, carbs: 4, fats: 0.5, category: "protein" },
+    { name: "Kidney Beans (cooked)", calories: 127, protein: 8.7, carbs: 22.8, fats: 0.5, category: "protein" },
+    { name: "Pinto Beans (cooked)", calories: 143, protein: 9, carbs: 26, fats: 0.6, category: "protein" },
+    { name: "Lima Beans (cooked)", calories: 115, protein: 7.8, carbs: 21, fats: 0.4, category: "protein" },
     
     // 🇵🇭 Filipino Fish & Seafood
     { name: "Milkfish (Bangus in Filipino)", calories: 152, protein: 20, carbs: 0, fats: 7, category: "protein" },
@@ -82,6 +94,22 @@ export const FOOD_DATABASE = {
     { name: "Mango", calories: 99, protein: 1.4, carbs: 25, fats: 0.6, category: "carbs" },
     { name: "Pineapple", calories: 82, protein: 0.9, carbs: 22, fats: 0.2, category: "carbs" },
     { name: "Grapes", calories: 62, protein: 0.6, carbs: 16, fats: 0.2, category: "carbs" },
+    { name: "Spaghetti (cooked)", calories: 158, protein: 6, carbs: 31, fats: 0.9, category: "carbs" },
+    { name: "White Bread (1 slice)", calories: 265, protein: 9, carbs: 49, fats: 3, category: "carbs" },
+    { name: "Sourdough Bread", calories: 289, protein: 12, carbs: 56, fats: 1.8, category: "carbs" },
+    { name: "Bagel (plain)", calories: 250, protein: 10, carbs: 49, fats: 1.5, category: "carbs" },
+    { name: "Tortilla (flour)", calories: 312, protein: 8, carbs: 49, fats: 8, category: "carbs" },
+    { name: "Watermelon", calories: 30, protein: 0.6, carbs: 8, fats: 0.2, category: "carbs" },
+    { name: "Peach", calories: 39, protein: 0.9, carbs: 10, fats: 0.3, category: "carbs" },
+    { name: "Pita Bread", calories: 275, protein: 9, carbs: 55, fats: 1.2, category: "carbs" },
+    { name: "Naan Bread", calories: 317, protein: 9, carbs: 51, fats: 8, category: "carbs" },
+    { name: "Rye Bread", calories: 259, protein: 8.5, carbs: 48, fats: 3.3, category: "carbs" },
+    { name: "Kiwi", calories: 61, protein: 1.1, carbs: 15, fats: 0.5, category: "carbs" },
+    { name: "Pear", calories: 57, protein: 0.4, carbs: 15, fats: 0.1, category: "carbs" },
+    { name: "Pomegranate", calories: 83, protein: 1.7, carbs: 19, fats: 1.2, category: "carbs" },
+    { name: "Cantaloupe", calories: 34, protein: 0.8, carbs: 8, fats: 0.2, category: "carbs" },
+    { name: "Plum", calories: 46, protein: 0.7, carbs: 11, fats: 0.3, category: "carbs" },
+    { name: "Macaroni (cooked)", calories: 157, protein: 5.8, carbs: 31, fats: 0.9, category: "carbs" },
     
     // 🇵🇭 Filipino Staples
     { name: "Sweet Potato (Kamote in Filipino, boiled)", calories: 76, protein: 1.4, carbs: 18, fats: 0.1, category: "carbs" },
@@ -116,7 +144,18 @@ export const FOOD_DATABASE = {
     { name: "Tahini", calories: 178, protein: 5, carbs: 6, fats: 16, category: "fats" },
     { name: "Coconut (shredded)", calories: 99, protein: 1, carbs: 4, fats: 9, category: "fats" },
     { name: "Dark Chocolate (70% cocoa)", calories: 155, protein: 2.2, carbs: 13, fats: 11, category: "fats" },
-    { name: "Butter", calories: 102, protein: 0.1, carbs: 0, fats: 12, category: "fats" }
+    { name: "Butter", calories: 102, protein: 0.1, carbs: 0, fats: 12, category: "fats" },
+    { name: "Mayonnaise", calories: 680, protein: 1, carbs: 0.6, fats: 75, category: "fats" },
+    { name: "Ranch Dressing", calories: 432, protein: 1.3, carbs: 5, fats: 46, category: "fats" },
+    { name: "Sour Cream", calories: 198, protein: 2.4, carbs: 4.6, fats: 19, category: "fats" },
+    { name: "Guacamole", calories: 157, protein: 2, carbs: 8, fats: 14, category: "fats" },
+    { name: "Avocado Oil", calories: 884, protein: 0, carbs: 0, fats: 100, category: "fats" },
+    { name: "Canola Oil", calories: 884, protein: 0, carbs: 0, fats: 100, category: "fats" },
+    { name: "Caesar Dressing", calories: 541, protein: 2.4, carbs: 3, fats: 58, category: "fats" },
+    { name: "Italian Dressing", calories: 290, protein: 0, carbs: 10, fats: 28, category: "fats" },
+    { name: "Margarine", calories: 717, protein: 0.2, carbs: 0.7, fats: 81, category: "fats" },
+    { name: "Pistachios", calories: 562, protein: 20, carbs: 28, fats: 45, category: "fats" },
+    { name: "Peanuts", calories: 567, protein: 26, carbs: 16, fats: 49, category: "fats" }
   ],
 
   // Vegetables
@@ -226,7 +265,13 @@ export const FOOD_DATABASE = {
     { name: "Tapsilog (Beef, Egg, Rice)", calories: 550, protein: 28, carbs: 65, fats: 20, category: "filipino_dishes" },
     { name: "Longganisa (Pork Sausage, 2 pcs)", calories: 320, protein: 14, carbs: 12, fats: 24, category: "filipino_dishes" },
     { name: "Bangus Silog (Milkfish, Egg, Rice)", calories: 480, protein: 26, carbs: 60, fats: 15, category: "filipino_dishes" },
-    { name: "Halo-Halo (Regular)", calories: 350, protein: 6, carbs: 65, fats: 8, category: "filipino_dishes" }
+    { name: "Halo-Halo (Regular)", calories: 350, protein: 6, carbs: 65, fats: 8, category: "filipino_dishes" },
+    { name: "Bicol Express", calories: 310, protein: 15, carbs: 8, fats: 25, category: "filipino_dishes" },
+    { name: "Dinuguan (Pork Blood Stew)", calories: 340, protein: 25, carbs: 6, fats: 24, category: "filipino_dishes" },
+    { name: "Pinakbet (Mixed Veg with Shrimp Paste)", calories: 110, protein: 8, carbs: 12, fats: 4, category: "filipino_dishes" },
+    { name: "Tortang Talong (Eggplant Omelet)", calories: 190, protein: 8, carbs: 10, fats: 13, category: "filipino_dishes" },
+    { name: "Lechon Manok (Roasted Chicken)", calories: 230, protein: 26, carbs: 0, fats: 14, category: "filipino_dishes" },
+    { name: "Pancit Bihon", calories: 240, protein: 8, carbs: 40, fats: 6, category: "filipino_dishes" }
   ],
 
   // Fast Food & Snacks
@@ -239,7 +284,18 @@ export const FOOD_DATABASE = {
     { name: "Potato Chips (1 oz)", calories: 152, protein: 2, carbs: 15, fats: 10, category: "fast_food" },
     { name: "Chocolate Bar (Milk, 40g)", calories: 210, protein: 3, carbs: 24, fats: 12, category: "fast_food" },
     { name: "Donut (Glazed)", calories: 260, protein: 3, carbs: 31, fats: 14, category: "fast_food" },
-    { name: "Hot Dog (with bun)", calories: 310, protein: 10, carbs: 24, fats: 18, category: "fast_food" }
+    { name: "Hot Dog (with bun)", calories: 310, protein: 10, carbs: 24, fats: 18, category: "fast_food" },
+    { name: "Taco (Beef)", calories: 226, protein: 12, carbs: 19, fats: 11, category: "fast_food" },
+    { name: "Burrito (Bean & Cheese)", calories: 190, protein: 7, carbs: 31, fats: 5, category: "fast_food" },
+    { name: "Chicken Nuggets (6 pcs)", calories: 280, protein: 13, carbs: 16, fats: 18, category: "fast_food" },
+    { name: "Protein Bar", calories: 400, protein: 30, carbs: 40, fats: 10, category: "fast_food" },
+    { name: "Popcorn (air-popped)", calories: 387, protein: 13, carbs: 78, fats: 4.5, category: "fast_food" },
+    { name: "Double Cheeseburger", calories: 450, protein: 25, carbs: 34, fats: 24, category: "fast_food" },
+    { name: "Crispy Chicken Sandwich", calories: 410, protein: 19, carbs: 43, fats: 18, category: "fast_food" },
+    { name: "Onion Rings", calories: 411, protein: 4, carbs: 44, fats: 24, category: "fast_food" },
+    { name: "Cookie (Chocolate Chip)", calories: 488, protein: 5, carbs: 64, fats: 24, category: "fast_food" },
+    { name: "Cracker (Saltine)", calories: 421, protein: 9, carbs: 74, fats: 9, category: "fast_food" },
+    { name: "Muffin (Blueberry)", calories: 377, protein: 5, carbs: 54, fats: 15, category: "fast_food" }
   ],
 
   // Beverages

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, View, Image, Easing, Dimensions } from 'react-native';
+import { Animated, StyleSheet, View, Image, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -11,27 +11,31 @@ const LOOK_LEFT   = 3;
 const LOOK_RIGHT  = 4;
 const SMILE       = 5;
 
-const BLINK_SEQ      = [BLINK_HALF, BLINK_CLOSE, BLINK_HALF, IDLE];
-const BLINK_FRAME_MS = 50;
+// Blink sequence: each step is { frame, duration ms }
+// Slower than the original 50ms — feels like a real, lazy blink
+const BLINK_SEQ = [
+  { frame: BLINK_HALF,  duration: 120 },
+  { frame: BLINK_CLOSE, duration: 200 },
+  { frame: BLINK_HALF,  duration: 120 },
+];
 
-// Idle expressions played randomly
-const IDLE_EXPRESSIONS = [LOOK_LEFT, LOOK_RIGHT, SMILE];
+// How long Owen holds a side glance before returning to idle
+const LOOK_HOLD_MS = 1800;
 
 const OwenMascot = ({ size = 120, isHappy = false }) => {
   const [frame, setFrame] = useState(IDLE);
   const scaleIn = useRef(new Animated.Value(1)).current;
 
-  // Sync frame with isHappy when not animating other things
+  // Sync frame with isHappy when at a neutral state
   useEffect(() => {
+    let timeout;
     if (frame === IDLE || frame === SMILE) {
-      setFrame(isHappy ? SMILE : IDLE);
+      timeout = setTimeout(() => {
+        setFrame(isHappy ? SMILE : IDLE);
+      }, 600); // 600ms delay when mood changes
     }
+    return () => clearTimeout(timeout);
   }, [isHappy]);
-
-  // ── Pop-in on mount removed for instant rendering ──
-  useEffect(() => {
-    // scaleIn is already 1
-  }, []);
 
   // ── Random blink loop (every 2–4s) ──
   useEffect(() => {
@@ -39,17 +43,27 @@ const OwenMascot = ({ size = 120, isHappy = false }) => {
     const scheduleBlink = () => {
       const delay = 2000 + Math.random() * 2000;
       timeout = setTimeout(() => {
+        // If happy, transition smoothly: SMILE -> IDLE -> Blink -> IDLE -> SMILE
+        const seq = isHappy 
+          ? [
+              { frame: IDLE, duration: 200 },
+              ...BLINK_SEQ,
+              { frame: IDLE, duration: 900 }
+            ]
+          : BLINK_SEQ;
+
         let i = 0;
-        const runFrame = () => {
-          if (i < BLINK_SEQ.length) {
-            setFrame(BLINK_SEQ[i++]);
-            setTimeout(runFrame, BLINK_FRAME_MS);
+        const runStep = () => {
+          if (i < seq.length) {
+            const { frame: f, duration } = seq[i++];
+            setFrame(f);
+            timeout = setTimeout(runStep, duration);
           } else {
             setFrame(isHappy ? SMILE : IDLE);
             scheduleBlink();
           }
         };
-        runFrame();
+        runStep();
       }, delay);
     };
     scheduleBlink();
@@ -63,40 +77,46 @@ const OwenMascot = ({ size = 120, isHappy = false }) => {
       const delay = 6000 + Math.random() * 4000;
       timeout = setTimeout(() => {
         const expr = Math.random() > 0.5 ? LOOK_LEFT : LOOK_RIGHT;
-        setFrame(expr);
-        setTimeout(() => {
-          setFrame(isHappy ? SMILE : IDLE);
-          scheduleLook();
-        }, 900);
+        
+        if (isHappy) {
+          // Transition through neutral before and after looking
+          setFrame(IDLE);
+          timeout = setTimeout(() => {
+            setFrame(expr);
+            timeout = setTimeout(() => {
+              setFrame(IDLE);
+              timeout = setTimeout(() => {
+                setFrame(SMILE);
+                scheduleLook();
+              }, 900);
+            }, LOOK_HOLD_MS);
+          }, 200);
+        } else {
+          setFrame(expr);
+          timeout = setTimeout(() => {
+            setFrame(IDLE);
+            scheduleLook();
+          }, LOOK_HOLD_MS);
+        }
       }, delay);
     };
     scheduleLook();
     return () => clearTimeout(timeout);
   }, [isHappy]);
 
-  // ── Random smile removed, now controlled by isHappy prop ──
-
-  const imgStyle    = { width: size, height: size, position: 'absolute' };
-  const shown       = { opacity: 1 };
-  const hidden      = { opacity: 0 };
+  const imgStyle = { width: size, height: size, position: 'absolute' };
+  const shown    = { opacity: 1 };
+  const hidden   = { opacity: 0 };
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Animated.View
-        style={{
-          width: size,
-          height: size,
-          transform: [
-            { scale: scaleIn },
-          ],
-        }}
-      >
-        <Image source={require('../../assets/genius_bot.png')}         fadeDuration={0} style={[imgStyle, frame === IDLE        ? shown : hidden]} resizeMode="contain" />
-        <Image source={require('../../assets/owen_blink_half.png')}    fadeDuration={0} style={[imgStyle, frame === BLINK_HALF  ? shown : hidden]} resizeMode="contain" />
-        <Image source={require('../../assets/owen_blink_closed.png')}  fadeDuration={0} style={[imgStyle, frame === BLINK_CLOSE ? shown : hidden]} resizeMode="contain" />
-        <Image source={require('../../assets/owen_look_left.png')}     fadeDuration={0} style={[imgStyle, frame === LOOK_LEFT   ? shown : hidden]} resizeMode="contain" />
-        <Image source={require('../../assets/owen_look_right.png')}    fadeDuration={0} style={[imgStyle, frame === LOOK_RIGHT  ? shown : hidden]} resizeMode="contain" />
-        <Image source={require('../../assets/owen_smile.png')}         fadeDuration={0} style={[imgStyle, frame === SMILE       ? shown : hidden]} resizeMode="contain" />
+      <Animated.View style={{ width: size, height: size, transform: [{ scale: scaleIn }] }}>
+        <Image source={require('../../assets/genius_bot.png')}        fadeDuration={0} style={[imgStyle, frame === IDLE        ? shown : hidden]} resizeMode="contain" />
+        <Image source={require('../../assets/owen_blink_half.png')}   fadeDuration={0} style={[imgStyle, frame === BLINK_HALF  ? shown : hidden]} resizeMode="contain" />
+        <Image source={require('../../assets/owen_blink_closed.png')} fadeDuration={0} style={[imgStyle, frame === BLINK_CLOSE ? shown : hidden]} resizeMode="contain" />
+        <Image source={require('../../assets/owen_look_left.png')}    fadeDuration={0} style={[imgStyle, frame === LOOK_LEFT   ? shown : hidden]} resizeMode="contain" />
+        <Image source={require('../../assets/owen_look_right.png')}   fadeDuration={0} style={[imgStyle, frame === LOOK_RIGHT  ? shown : hidden]} resizeMode="contain" />
+        <Image source={require('../../assets/owen_smile.png')}        fadeDuration={0} style={[imgStyle, frame === SMILE       ? shown : hidden]} resizeMode="contain" />
       </Animated.View>
     </View>
   );

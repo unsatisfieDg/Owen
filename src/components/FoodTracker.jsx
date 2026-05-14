@@ -57,6 +57,9 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
 
   // AI Assistant state
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'assistant', text: "Hey! I'm Owen, your AI nutrition assistant. I can help you track food, suggest meals, or answer health questions. What did you eat today?" }
+  ]);
 
   // Custom Foods
   const { customFoods, addCustomFood } = useCustomFoods(user?.id);
@@ -359,18 +362,16 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
   return (
     <View 
       ref={containerRef}
-      style={[styles.container, darkMode && styles.containerDark]}
+      style={[styles.container, darkMode ? styles.containerDark : null]}
       onLayout={() => {}}
       collapsable={false}
     >
       <View style={styles.header}>
         <Icon name="food-apple" size={24} color="#10b981" />
-        <Text style={[styles.title, darkMode && styles.titleDark]}>Food Tracker</Text>
+        <Text style={[styles.title, darkMode ? styles.titleDark : null]}>Food Tracker</Text>
       </View>
 
-      {/* Search Area - wrapped for absolute positioning */}
       <View style={styles.searchArea}>
-        {/* AI Assistant Banner */}
         <TouchableOpacity 
           style={styles.aiBannerContainer}
           onPress={onOpenAI}
@@ -399,19 +400,18 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Search Bar */}
         <View style={styles.searchContainer} collapsable={false}>
-        <View style={styles.searchInputContainer}>
+        <View style={[styles.searchInputContainer, darkMode ? styles.searchInputContainerDark : null]}>
           <Icon name="magnify" size={20} color="#9ca3af" />
           <TextInput
             ref={searchInputRef}
-            style={styles.searchInput}
+            style={[styles.searchInput, darkMode ? styles.searchInputDark : null]}
             placeholder="Search food (e.g., chicken, banana)..."
+            placeholderTextColor={darkMode ? '#9ca3af' : '#6b7280'}
             value={foodSearch}
             onChangeText={handleInputChange}
             onFocus={() => {
               setIsInputFocused(true);
-              // Prevent scroll on focus
               searchInputRef.current?.setNativeProps({ caretHidden: false });
             }}
             onBlur={() => {
@@ -459,7 +459,6 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
             </LinearGradient>
           </TouchableOpacity>
           
-          {/* Barcode Scanner Button - Reverted to minimalist icon */}
           <TouchableOpacity 
             style={styles.searchButton} 
             onPress={() => {
@@ -480,17 +479,16 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
         </View>
       </View>
 
-        {/* Live Search Results */}
         {liveResults.length > 0 && !showResults && (
           <ScrollView 
-            style={styles.liveResults} 
+            style={[styles.liveResults, darkMode ? styles.liveResultsDark : null]} 
             keyboardShouldPersistTaps="handled" 
             nestedScrollEnabled={true}
           >
             {liveResults.map((food, idx) => (
               <TouchableOpacity
                 key={idx}
-                style={styles.liveResultItem}
+                style={[styles.liveResultItem, darkMode ? styles.liveResultItemDark : null]}
                 onPress={() => {
                   Keyboard.dismiss();
                   setSelectedFood(food);
@@ -499,25 +497,24 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
                 }}
               >
                 <Icon name="food" size={16} color="#6b7280" />
-                <Text style={styles.liveResultText}>{food.name}</Text>
-                <Text style={styles.liveResultMacro}>{food.calories} cal</Text>
+                <Text style={[styles.liveResultText, darkMode ? styles.liveResultTextDark : null]}>{food.name}</Text>
+                <Text style={[styles.liveResultMacro, darkMode ? styles.liveResultMacroDark : null]}>{food.calories} cal</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
         )}
       </View>
 
-      {/* Search Results Modal */}
       <Modal visible={showResults} animationType="slide" transparent={true}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, darkMode ? styles.modalContentDark : null]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Search Results</Text>
+              <Text style={[styles.modalTitle, darkMode ? styles.modalTitleDark : null]}>Search Results</Text>
               <TouchableOpacity onPress={() => setShowResults(false)}>
-                <Icon name="close" size={24} color="#6b7280" />
+                <Icon name="close" size={24} color={darkMode ? '#9ca3af' : '#6b7280'} />
               </TouchableOpacity>
             </View>
 
@@ -537,13 +534,14 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
                       key={idx}
                       style={[
                         styles.resultItem,
+                        darkMode ? styles.resultItemDark : null,
                         selectedFood?.name === food.name && styles.resultItemSelected
                       ]}
                       onPress={() => handleSelectFood(food)}
                     >
                       <View style={styles.resultInfo}>
-                        <Text style={styles.foodName}>{food.name}</Text>
-                        <Text style={styles.foodMacros}>
+                        <Text style={[styles.foodName, darkMode ? styles.foodNameDark : null]}>{food.name}</Text>
+                        <Text style={[styles.foodMacros, darkMode ? styles.foodMacrosDark : null]}>
                           {food.calories}cal • P:{food.protein}g • C:{food.carbs}g • F:{food.fats}g
                         </Text>
                       </View>
@@ -557,11 +555,11 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
                 {selectedFood && (
                   <View style={styles.addSection}>
                     <View style={styles.amountContainer}>
-                      <Text style={styles.amountLabel}>Amount (g):</Text>
+                      <Text style={[styles.amountLabel, darkMode ? styles.amountLabelDark : null]}>Amount (g):</Text>
                       <TextInput
-                        style={styles.servingInput}
+                        style={[styles.servingInput, darkMode ? styles.servingInputDark : null]}
                         placeholder="100"
-                        placeholderTextColor="#9ca3af"
+                        placeholderTextColor={darkMode ? '#9ca3af' : '#9ca3af'}
                         keyboardType="numeric"
                         value={foodAmount}
                         onChangeText={setFoodAmount}
@@ -579,18 +577,17 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
                   </View>
                 )}
 
-                {/* Create Custom Food Button inside Search Results */}
                 <View style={styles.createCustomFoodContainer}>
                   <Text style={styles.createCustomFoodText}>Can't find what you're looking for?</Text>
                   <TouchableOpacity 
-                    style={styles.createCustomFoodBtn} 
+                    style={[styles.createCustomFoodBtn, darkMode ? styles.createCustomFoodBtnDark : null]} 
                     onPress={() => {
                       setShowResults(false);
                       setShowCustomFoodModal(true);
                       setCustomFoodForm({...customFoodForm, name: foodSearch});
                     }}
                   >
-                    <Text style={styles.createCustomFoodBtnText}>Create Custom Food</Text>
+                    <Text style={[styles.createCustomFoodBtnText, darkMode ? styles.createCustomFoodBtnTextDark : null]}>Create Custom Food</Text>
                   </TouchableOpacity>
                 </View>
               </>
@@ -599,25 +596,28 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Food Log */}
       <View style={styles.foodLogHeader}>
-        <Text style={styles.foodLogTitle}>Today's Log</Text>
-        <Text style={styles.foodLogCount}>{dailyLog.foods.length} items</Text>
+        <Text style={[styles.foodLogTitle, darkMode ? styles.foodLogTitleDark : null]}>Today's Log</Text>
+        <Text style={[styles.foodLogCount, darkMode ? styles.foodLogCountDark : null]}>{dailyLog.foods.length} items</Text>
       </View>
 
       <ScrollView style={styles.foodLog}>
         {dailyLog.foods.length === 0 ? (
           <View style={styles.emptyState}>
-            <Icon name="food-off" size={48} color="#d1d5db" />
-            <Text style={styles.emptyText}>No foods logged yet</Text>
-            <Text style={styles.emptySubtext}>Search and add food above to start tracking</Text>
+            <View style={[styles.emptyIconCircle, darkMode && styles.emptyIconCircleDark]}>
+              <Icon name="silverware-clean" size={42} color={darkMode ? '#0d9488' : '#10b981'} />
+            </View>
+            <Text style={[styles.emptyText, darkMode ? styles.emptyTextDark : null]}>Your plate is empty!</Text>
+            <Text style={[styles.emptySubtext, darkMode ? styles.emptySubtextDark : null]}>
+              Search for your meals above or tap the Owen banner to let AI log it for you.
+            </Text>
           </View>
         ) : (
           dailyLog.foods.map((food) => (
-            <View key={food.id} style={styles.foodItem}>
+            <View key={food.id} style={[styles.foodItem, darkMode ? styles.foodItemDark : null]}>
               <View style={styles.foodInfo}>
-                <Text style={styles.foodItemName}>{food.name}</Text>
-                <Text style={styles.foodItemDetails}>
+                <Text style={[styles.foodItemName, darkMode ? styles.foodItemNameDark : null]}>{food.name}</Text>
+                <Text style={[styles.foodItemDetails, darkMode ? styles.foodItemDetailsDark : null]}>
                   {food.serving}g • {food.calories}cal • P:{food.protein}g • C:{food.carbs}g
                 </Text>
               </View>
@@ -632,12 +632,11 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
         )}
       </ScrollView>
 
-      {/* Barcode Scanner Preview Modal */}
       <Modal visible={showScannerPreview} animationType="fade" transparent={true}>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, darkMode ? styles.modalContentDark : null]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Scanned Nutrition</Text>
+              <Text style={[styles.modalTitle, darkMode ? styles.modalTitleDark : null]}>Scanned Nutrition</Text>
               <TouchableOpacity onPress={() => setShowScannerPreview(false)}>
                 <Icon name="close" size={24} color="#6b7280" />
               </TouchableOpacity>
@@ -894,6 +893,11 @@ const FoodTracker = ({ dailyLog, setDailyLog, nutrition, darkMode, onInputFocus,
           setShowAIAssistant(false);
         }}
         user={user}
+        nutrition={nutrition}
+        dailyLog={dailyLog}
+        chatHistory={chatHistory}
+        setChatHistory={setChatHistory}
+        darkMode={darkMode}
       />
     </View>
   );
@@ -991,11 +995,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     gap: 8,
   },
+  searchInputContainerDark: {
+    backgroundColor: '#262626',
+  },
   searchInput: {
     flex: 1,
     height: 48,
     fontSize: 14,
     color: '#1f2937',
+  },
+  searchInputDark: {
+    color: '#fff',
   },
   actionButtonsContainer: {
     flexDirection: 'row',
@@ -1029,6 +1039,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
   },
+  liveResultsDark: {
+    backgroundColor: '#1a1a1a',
+    borderColor: '#374151',
+  },
   liveResultItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1037,14 +1051,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f3f4f6',
   },
+  liveResultItemDark: {
+    borderBottomColor: '#262626',
+  },
   liveResultText: {
     flex: 1,
     fontSize: 14,
     color: '#1f2937',
   },
+  liveResultTextDark: {
+    color: '#fff',
+  },
   liveResultMacro: {
     fontSize: 12,
     color: '#6b7280',
+  },
+  liveResultMacroDark: {
+    color: '#9ca3af',
   },
   modalOverlay: {
     flex: 1,
@@ -1058,6 +1081,9 @@ const styles = StyleSheet.create({
     padding: 20,
     maxHeight: '85%',
   },
+  modalContentDark: {
+    backgroundColor: '#1a1a1a',
+  },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1068,6 +1094,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#1f2937',
+  },
+  modalTitleDark: {
+    color: '#fff',
   },
   loadingContainer: {
     alignItems: 'center',
@@ -1089,6 +1118,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
     marginBottom: 8,
   },
+  resultItemDark: {
+    backgroundColor: '#262626',
+  },
   resultItemSelected: {
     backgroundColor: '#d1fae5',
     borderWidth: 2,
@@ -1103,9 +1135,15 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     marginBottom: 4,
   },
+  foodNameDark: {
+    color: '#fff',
+  },
   foodMacros: {
     fontSize: 12,
     color: '#6b7280',
+  },
+  foodMacrosDark: {
+    color: '#9ca3af',
   },
   addSection: {
     marginTop: 16,
@@ -1128,6 +1166,9 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 6,
   },
+  amountLabelDark: {
+    color: '#9ca3af',
+  },
   servingInput: {
     height: 48,
     backgroundColor: '#f3f4f6',
@@ -1136,6 +1177,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#111827',
     fontWeight: '600',
+  },
+  servingInputDark: {
+    backgroundColor: '#262626',
+    color: '#fff',
   },
   addButton: {
     borderRadius: 12,
@@ -1173,10 +1218,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#d1d5db',
   },
+  createCustomFoodBtnDark: {
+    backgroundColor: '#262626',
+    borderColor: '#374151',
+  },
   createCustomFoodBtnText: {
     color: '#374151',
     fontWeight: '600',
     fontSize: 14,
+  },
+  createCustomFoodBtnTextDark: {
+    color: '#fff',
   },
   customFoodFormContainer: {
     paddingBottom: 20,
@@ -1193,9 +1245,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1f2937',
   },
+  foodLogTitleDark: {
+    color: '#fff',
+  },
   foodLogCount: {
     fontSize: 12,
     color: '#6b7280',
+  },
+  foodLogCountDark: {
+    color: '#9ca3af',
   },
   foodLog: {
     maxHeight: 300,
@@ -1204,17 +1262,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 32,
   },
+  emptyIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#ecfdf5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  emptyIconCircleDark: {
+    backgroundColor: '#115e59',
+  },
   emptyText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#9ca3af',
     marginTop: 12,
   },
+  emptyTextDark: {
+    color: '#4b5563',
+  },
   emptySubtext: {
     fontSize: 13,
     color: '#d1d5db',
     marginTop: 4,
     textAlign: 'center',
+  },
+  emptySubtextDark: {
+    color: '#374151',
   },
   foodItem: {
     flexDirection: 'row',
@@ -1225,6 +1301,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 8,
   },
+  foodItemDark: {
+    backgroundColor: '#262626',
+  },
   foodInfo: {
     flex: 1,
   },
@@ -1234,9 +1313,15 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     marginBottom: 4,
   },
+  foodItemNameDark: {
+    color: '#fff',
+  },
   foodItemDetails: {
     fontSize: 12,
     color: '#6b7280',
+  },
+  foodItemDetailsDark: {
+    color: '#9ca3af',
   },
   removeButton: {
     padding: 4,
@@ -1346,6 +1431,9 @@ const styles = StyleSheet.create({
     color: '#111827',
     flexShrink: 1,
   },
+  scannedNameDark: {
+    color: '#fff',
+  },
   macroGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1360,10 +1448,14 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: 'center',
   },
+  macroBoxDark: {
+    backgroundColor: '#162b24',
+  },
   macroVal: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#059669',
+    fontVariant: ['tabular-nums'],
   },
   macroLabel: {
     fontSize: 10,
@@ -1379,6 +1471,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9fafb',
     padding: 10,
     borderRadius: 8,
+  },
+  perGramInfoDark: {
+    backgroundColor: '#1f1f1f',
   },
   perGramText: {
     fontSize: 12,

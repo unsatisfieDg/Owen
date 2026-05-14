@@ -8,6 +8,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import OwenMascot from './OwenMascot';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -113,7 +114,10 @@ const Header = ({
           {/* Dark mode toggle */}
           <TouchableOpacity
             style={[styles.iconBtn, darkMode && styles.iconBtnDark]}
-            onPress={() => setDarkMode(!darkMode)}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setDarkMode(!darkMode);
+            }}
           >
             <Icon
               name={darkMode ? 'white-balance-sunny' : 'moon-waning-crescent'}
@@ -139,11 +143,11 @@ const Header = ({
         </TouchableOpacity>
 
         {/* Speech bubble */}
-        <View style={[styles.bubble, darkMode && styles.bubbleDark]}>
+        <View style={[styles.bubble, darkMode ? styles.bubbleDark : null]}>
           {/* Small left pointer */}
-          <View style={[styles.bubblePointer, darkMode && styles.bubblePointerDark]} />
-          <Text style={styles.bubbleName}>Owen</Text>
-          <Text style={[styles.bubbleText, darkMode && styles.bubbleTextDark]}>
+          <View style={[styles.bubblePointer, darkMode ? styles.bubblePointerDark : null]} />
+          <Text style={[styles.bubbleName, darkMode ? styles.bubbleNameDark : null]}>Owen</Text>
+          <Text style={[styles.bubbleText, darkMode ? styles.bubbleTextDark : null]}>
             {message}
           </Text>
         </View>
@@ -314,6 +318,9 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#0f766e',
     marginBottom: 5,
+  },
+  bubbleNameDark: {
+    color: '#2dd4bf',
   },
   bubbleText: {
     fontSize: isSmallScreen ? 11 : 12,

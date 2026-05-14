@@ -17,7 +17,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useCompletionTracking } from '../hooks/useCompletionTracking';
 import { exportLogsToCSV } from '../utils/exportUtils';
-import { shareProgressText, shareProgressCSV } from '../utils/shareUtils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const isSmallScreen = SCREEN_WIDTH < 375;
@@ -297,7 +296,7 @@ const UserProfile = ({
               💾 Data Management
             </Text>
             <Text style={[styles.hint, { marginBottom: 16, marginTop: -8 }]}>
-              Export your nutrition history for your coach or own records.
+              Export your nutrition history for your own records.
             </Text>
             
             <TouchableOpacity 
@@ -314,47 +313,7 @@ const UserProfile = ({
             </TouchableOpacity>
           </View>
 
-          {/* Social Sharing */}
-          <View style={[styles.progressCard, darkMode && styles.progressCardDark, { marginTop: 8 }]}>
-            <Text style={[styles.progressTitle, darkMode && styles.progressTitleDark]}>
-              📣 Share Progress
-            </Text>
-            <Text style={[styles.hint, { marginBottom: 16, marginTop: -8 }]}>
-              Share your streak and daily progress with friends or your coach.
-            </Text>
 
-            <TouchableOpacity
-              style={[styles.exportButton, { marginBottom: 10 }]}
-              onPress={() => shareProgressText({
-                userData,
-                nutrition,
-                completionStats,
-                completionData,
-                dailyLog: dailyLog || { calories: 0, protein: 0, carbs: 0, fats: 0 },
-              })}
-            >
-              <LinearGradient
-                colors={['#0d9488', '#0f766e']}
-                style={styles.exportGradient}
-              >
-                <Icon name="share-variant" size={20} color="#fff" />
-                <Text style={styles.exportText}>Share Progress Summary</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.exportButton}
-              onPress={() => shareProgressCSV(weeklyData)}
-            >
-              <LinearGradient
-                colors={['#0f766e', '#134e4a']}
-                style={styles.exportGradient}
-              >
-                <Icon name="file-send-outline" size={20} color="#fff" />
-                <Text style={styles.exportText}>Share as CSV File</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
 
           {/* User Stats */}
           <View style={styles.statsContainer}>

@@ -28,7 +28,7 @@ const parseIngredient = (raw) => {
   return { name: namePart, kcal, p, c, f, hasMacros: !!macroStr };
 };
 
-const AIAssistantModal = ({ visible, onClose, onAddFood, user, nutrition, dailyLog, chatHistory, setChatHistory }) => {
+const AIAssistantModal = ({ visible, onClose, onAddFood, user, nutrition, dailyLog, chatHistory, setChatHistory, darkMode }) => {
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [pendingFoodOptions, setPendingFoodOptions] = useState(null);
@@ -80,7 +80,7 @@ const AIAssistantModal = ({ visible, onClose, onAddFood, user, nutrition, dailyL
 
       setChatHistory(prev => [...prev, {
         role: 'assistant',
-        text: `[${response.source}] ${response.message}`
+        text: response.message
       }]);
 
       if (response.success) {
@@ -121,8 +121,8 @@ const AIAssistantModal = ({ visible, onClose, onAddFood, user, nutrition, dailyL
   return (
     <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
+        <View style={[styles.modalContent, darkMode && styles.modalContentDark]}>
+          <View style={[styles.header, darkMode && styles.headerDark]}>
             <View style={styles.titleContainer}>
               <Image 
                 source={require('../../assets/owen_icon_white.png')} 
@@ -139,31 +139,37 @@ const AIAssistantModal = ({ visible, onClose, onAddFood, user, nutrition, dailyL
 
           <ScrollView 
             ref={scrollViewRef}
-            style={styles.chatArea} 
+            style={[styles.chatArea, darkMode && styles.chatAreaDark]} 
             contentContainerStyle={{ padding: 16 }}
             keyboardShouldPersistTaps="handled"
             onScrollBeginDrag={Keyboard.dismiss}
             onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
           >
             {chatHistory?.map((msg, index) => (
-              <View key={index} style={[styles.messageBubble, msg.role === 'user' ? styles.userBubble : styles.assistantBubble]}>
-                <Text style={[styles.messageText, msg.role === 'user' ? styles.userText : styles.assistantText]}>{msg.text}</Text>
+              <View key={index} style={[
+                styles.messageBubble, 
+                msg.role === 'user' ? styles.userBubble : [styles.assistantBubble, darkMode ? styles.assistantBubbleDark : null]
+              ]}>
+                <Text style={[
+                  styles.messageText, 
+                  msg.role === 'user' ? styles.userText : [styles.assistantText, darkMode ? styles.assistantTextDark : null]
+                ]}>{msg.text}</Text>
               </View>
             ))}
 
             {isProcessing && (
-              <View style={[styles.messageBubble, styles.assistantBubble, styles.loadingBubble]}>
+              <View style={[styles.messageBubble, styles.assistantBubble, darkMode ? styles.assistantBubbleDark : null, styles.loadingBubble]}>
                 <ActivityIndicator size="small" color="#0d9488" />
-                <Text style={styles.processingText}>Processing offline & cloud...</Text>
+                <Text style={[styles.processingText, darkMode && styles.processingTextDark]}>Processing offline & cloud...</Text>
               </View>
             )}
 
             {pendingFoodOptions?.foods && (
               <View style={styles.optionsContainer}>
                 {pendingFoodOptions.foods.map((food, idx) => (
-                  <TouchableOpacity key={idx} style={styles.foodOptionCard} onPress={() => handleSelectFood(food)}>
-                    <Text style={styles.foodOptionName}>{food.name}</Text>
-                    <Text style={styles.foodOptionMacros}>{food.calories}cal • P:{food.protein}g • C:{food.carbs}g</Text>
+                  <TouchableOpacity key={idx} style={[styles.foodOptionCard, darkMode && styles.foodOptionCardDark]} onPress={() => handleSelectFood(food)}>
+                    <Text style={[styles.foodOptionName, darkMode && styles.foodOptionNameDark]}>{food.name}</Text>
+                    <Text style={[styles.foodOptionMacros, darkMode && styles.foodOptionMacrosDark]}>{food.calories}cal • P:{food.protein}g • C:{food.carbs}g</Text>
                     <Icon name="plus-circle" size={24} color="#10b981" />
                   </TouchableOpacity>
                 ))}
@@ -171,20 +177,20 @@ const AIAssistantModal = ({ visible, onClose, onAddFood, user, nutrition, dailyL
             )}
 
             {suggestedRecipe && (
-              <View style={styles.recipeCard}>
+              <View style={[styles.recipeCard, darkMode && styles.recipeCardDark]}>
                 <View style={styles.recipeHeader}>
                   <Icon name="silverware-fork-knife" size={24} color="#0d9488" />
-                  <Text style={styles.recipeTitle}>{suggestedRecipe.name}</Text>
+                  <Text style={[styles.recipeTitle, darkMode && styles.recipeTitleDark]}>{suggestedRecipe.name}</Text>
                 </View>
-                <Text style={styles.recipeMacros}>
+                <Text style={[styles.recipeMacros, darkMode && styles.recipeMacrosDark]}>
                   {suggestedRecipe.calories} kcal | P: {suggestedRecipe.protein}g | C: {suggestedRecipe.carbs}g | F: {suggestedRecipe.fats}g
                 </Text>
-                <Text style={styles.recipeSub}>Ingredients:</Text>
+                <Text style={[styles.recipeSub, darkMode && styles.recipeSubDark]}>Ingredients:</Text>
                 {suggestedRecipe.ingredients?.map((ing, i) => (
-                  <Text key={i} style={styles.ingredientText}>• {ing}</Text>
+                  <Text key={i} style={[styles.ingredientText, darkMode && styles.ingredientTextDark]}>• {ing}</Text>
                 ))}
-                <Text style={[styles.recipeSub, { marginTop: 10 }]}>How to cook:</Text>
-                <Text style={styles.instructionsText}>{suggestedRecipe.instructions}</Text>
+                <Text style={[styles.recipeSub, darkMode && styles.recipeSubDark, { marginTop: 10 }]}>How to cook:</Text>
+                <Text style={[styles.instructionsText, darkMode && styles.instructionsTextDark]}>{suggestedRecipe.instructions}</Text>
                 <TouchableOpacity 
                   style={styles.addRecipeBtn}
                   onPress={() => {
@@ -213,24 +219,25 @@ const AIAssistantModal = ({ visible, onClose, onAddFood, user, nutrition, dailyL
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false} 
-            style={styles.quickButtonsContainer}
+            style={[styles.quickButtonsContainer, darkMode && styles.quickButtonsContainerDark]}
             contentContainerStyle={styles.quickButtonsContent}
           >
-             <TouchableOpacity style={styles.quickBtn} onPress={() => setInputText('Give me a meal suggestion')}>
-                <Text style={styles.quickBtnText}>🍱 Suggest Meal</Text>
+             <TouchableOpacity style={[styles.quickBtn, darkMode && styles.quickBtnDark]} onPress={() => setInputText('Give me a meal suggestion')}>
+                <Text style={[styles.quickBtnText, darkMode && styles.quickBtnTextDark]}>🍱 Suggest Meal</Text>
              </TouchableOpacity>
-             <TouchableOpacity style={styles.quickBtn} onPress={() => setInputText('Suggest a Filipino recipe')}>
-                <Text style={styles.quickBtnText}>🇵🇭 Pinoy Recipe</Text>
+             <TouchableOpacity style={[styles.quickBtn, darkMode && styles.quickBtnDark]} onPress={() => setInputText('Suggest a Filipino recipe')}>
+                <Text style={[styles.quickBtnText, darkMode && styles.quickBtnTextDark]}>🇵🇭 Pinoy Recipe</Text>
              </TouchableOpacity>
-             <TouchableOpacity style={styles.quickBtn} onPress={() => setInputText('Budget student meal')}>
-                <Text style={styles.quickBtnText}>🎓 Budget Meal</Text>
+             <TouchableOpacity style={[styles.quickBtn, darkMode && styles.quickBtnDark]} onPress={() => setInputText('Budget student meal')}>
+                <Text style={[styles.quickBtnText, darkMode && styles.quickBtnTextDark]}>🎓 Budget Meal</Text>
              </TouchableOpacity>
           </ScrollView>
 
-          <View style={styles.inputArea}>
+          <View style={[styles.inputArea, darkMode && styles.inputAreaDark]}>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, darkMode && styles.textInputDark]}
               placeholder="Tell Owen what you ate... 🍎"
+              placeholderTextColor={darkMode ? '#9ca3af' : '#9ca3af'}
               value={inputText}
               onChangeText={setInputText}
               onSubmitEditing={handleSend}
@@ -250,30 +257,43 @@ const AIAssistantModal = ({ visible, onClose, onAddFood, user, nutrition, dailyL
 const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 30, borderTopRightRadius: 30, height: '82%' },
+  modalContentDark: { backgroundColor: '#1a1a1a' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 22, backgroundColor: '#134e4a' },
+  headerDark: { backgroundColor: '#06201e' },
   titleContainer: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   title: { fontSize: 20, fontWeight: '900', color: '#134e4a', letterSpacing: 0.5 },
   closeBtn: { padding: 6, backgroundColor: '#f3f4f6', borderRadius: 20 },
   chatArea: { flex: 1, backgroundColor: '#f0fdfa' },
+  chatAreaDark: { backgroundColor: '#0a0a0a' },
   messageBubble: { maxWidth: '85%', padding: 14, borderRadius: 22, marginBottom: 14 },
   userBubble: { alignSelf: 'flex-end', backgroundColor: '#0d9488', borderBottomRightRadius: 4 },
   assistantBubble: { alignSelf: 'flex-start', backgroundColor: '#fff', borderWidth: 1, borderColor: '#ccfbf1', borderBottomLeftRadius: 4, elevation: 1, shadowColor: '#14b8a6', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
+  assistantBubbleDark: { backgroundColor: '#262626', borderColor: '#134e4a' },
   loadingBubble: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   messageText: { fontSize: 16, lineHeight: 22 },
   userText: { color: '#fff', fontWeight: '500' },
   assistantText: { color: '#134e4a' },
+  assistantTextDark: { color: '#fff' },
   processingText: { color: '#0d9488', fontSize: 14, fontStyle: 'italic', fontWeight: '500' },
+  processingTextDark: { color: '#2dd4bf' },
   optionsContainer: { marginTop: 10, gap: 10 },
   foodOptionCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 14, borderRadius: 16, borderWidth: 1, borderColor: '#ccfbf1', elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4 },
+  foodOptionCardDark: { backgroundColor: '#262626', borderColor: '#134e4a' },
   foodOptionName: { flex: 1, fontSize: 15, fontWeight: '700', color: '#134e4a' },
+  foodOptionNameDark: { color: '#fff' },
   foodOptionMacros: { fontSize: 13, color: '#0d9488', marginRight: 12, fontWeight: '500' },
+  foodOptionMacrosDark: { color: '#2dd4bf' },
   inputArea: { flexDirection: 'row', padding: 20, borderTopWidth: 1, borderTopColor: '#f3f4f6', backgroundColor: '#fff', gap: 12, paddingBottom: Platform.OS === 'ios' ? 34 : 20 },
+  inputAreaDark: { backgroundColor: '#1a1a1a', borderTopColor: '#262626' },
   textInput: { flex: 1, backgroundColor: '#f0fdfa', borderRadius: 28, paddingHorizontal: 20, fontSize: 16, height: 52, borderWidth: 1, borderColor: '#ccfbf1', color: '#134e4a' },
+  textInputDark: { backgroundColor: '#262626', borderColor: '#134e4a', color: '#fff' },
   sendButton: { width: 52, height: 52, borderRadius: 26, overflow: 'hidden', elevation: 3, shadowColor: '#0d9488', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 5 },
   sendButtonGradient: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   recipeCard: { backgroundColor: '#fff', padding: 18, borderRadius: 24, marginTop: 10, borderWidth: 2, borderColor: '#0d9488' },
+  recipeCardDark: { backgroundColor: '#262626', borderColor: '#0d9488' },
   recipeHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   recipeTitle: { fontSize: 17, fontWeight: '800', color: '#134e4a', flex: 1 },
+  recipeTitleDark: { color: '#fff' },
   macroBadgeRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   macroBadge: { flex: 1, borderRadius: 10, paddingVertical: 6, alignItems: 'center' },
   macroBadgeVal: { fontSize: 15, fontWeight: '800' },
@@ -281,9 +301,12 @@ const styles = StyleSheet.create({
   gapRow: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#f0fdfa', padding: 8, borderRadius: 10, marginBottom: 12 },
   gapText: { fontSize: 12, color: '#0d9488', fontWeight: '600', flex: 1 },
   recipeMacros: { fontSize: 14, color: '#0d9488', fontWeight: '700', marginBottom: 12 },
+  recipeMacrosDark: { color: '#2dd4bf' },
   recipeSub: { fontSize: 13, fontWeight: '700', color: '#134e4a', marginBottom: 6 },
+  recipeSubDark: { color: '#fff' },
   ingredientRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 4 },
   ingredientText: { fontSize: 13, color: '#4b5563', flex: 1, lineHeight: 19 },
+  ingredientTextDark: { color: '#9ca3af' },
   ingredientCard: { backgroundColor: '#f8fafc', borderRadius: 12, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: '#e5e7eb' },
   ingredientNameRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   ingredientName: { fontSize: 13, fontWeight: '600', color: '#134e4a', flex: 1, lineHeight: 18 },
@@ -292,12 +315,16 @@ const styles = StyleSheet.create({
   ingMacroVal: { fontSize: 12, fontWeight: '800' },
   ingMacroLabel: { fontSize: 9, color: '#6b7280', fontWeight: '600' },
   instructionsText: { fontSize: 13, color: '#6b7280', fontStyle: 'italic', lineHeight: 19 },
+  instructionsTextDark: { color: '#9ca3af' },
   addRecipeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#0d9488', padding: 13, borderRadius: 14, marginTop: 16 },
   addRecipeBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 15 },
   quickButtonsContainer: { backgroundColor: '#f0fdfa', maxHeight: 60 },
+  quickButtonsContainerDark: { backgroundColor: '#0a0a0a' },
   quickButtonsContent: { flexDirection: 'row', gap: 10, paddingHorizontal: 20, paddingVertical: 10, alignItems: 'center' },
   quickBtn: { backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#ccfbf1' },
-  quickBtnText: { fontSize: 13, color: '#0d9488', fontWeight: '600' }
+  quickBtnDark: { backgroundColor: '#262626', borderColor: '#134e4a' },
+  quickBtnText: { fontSize: 13, color: '#0d9488', fontWeight: '600' },
+  quickBtnTextDark: { color: '#2dd4bf' }
 });
 
 export default AIAssistantModal;

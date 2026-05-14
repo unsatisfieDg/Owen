@@ -23,13 +23,15 @@ const FILLER_WORDS = [
   'this morning', 'this evening', 'tonight', 'just now', 'earlier',
   'some', 'a bit of', 'a piece of', 'a portion of', 'a serving of',
   'about', 'around', 'roughly', 'approximately',
-  'and', 'with', 'plus', 'of', 'the'
+  'and', 'with', 'plus', 'of', 'the',
+  'can i get', 'i want', 'add some', 'let me log', 'had a', 'had an', 'ate a', 'ate an', 'ate some', 'just'
 ];
 
 const WORD_TO_NUM = {
   'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
   'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
-  'half': 0.5, 'quarter': 0.25, 'a': 1, 'an': 1
+  'eleven': 11, 'twelve': 12, 'dozen': 12,
+  'half': 0.5, 'quarter': 0.25, 'a': 1, 'an': 1, 'couple': 2, 'few': 3
 };
 
 const cleanInput = (text) => {
@@ -53,11 +55,56 @@ const cleanInput = (text) => {
 
 // ─── Portion-Size Synonym Map ────────────────────────────────────────────────
 const PORTION_MAP = [
+  { pattern: /\b(\d*\.?\d+)?\s*small\s+egg[s]?\b/i,  grams: 45,  default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*medium\s+egg[s]?\b/i, grams: 50,  default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*large\s+egg[s]?\b/i,  grams: 60,  default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*egg[s]?\b/i,          grams: 60,  default: 1 },
+
+  { pattern: /\b(\d*\.?\d+)?\s*small\s+banana[s]?\b/i,  grams: 100, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*medium\s+banana[s]?\b/i, grams: 118, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*large\s+banana[s]?\b/i,  grams: 136, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*banana[s]?\b/i,          grams: 118, default: 1 },
+
+  { pattern: /\b(\d*\.?\d+)?\s*small\s+apple[s]?\b/i,  grams: 150, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*medium\s+apple[s]?\b/i, grams: 182, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*large\s+apple[s]?\b/i,  grams: 220, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*apple[s]?\b/i,          grams: 182, default: 1 },
+
+  { pattern: /\b(\d*\.?\d+)?\s*small\s+orange[s]?\b/i, grams: 100, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*medium\s+orange[s]?\b/i, grams: 130, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*large\s+orange[s]?\b/i, grams: 160, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*orange[s]?\b/i,          grams: 130, default: 1 },
+
+  { pattern: /\b(\d*\.?\d+)?\s*small\s+potato(?:es)?\b/i, grams: 170, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*medium\s+potato(?:es)?\b/i, grams: 213, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*large\s+potato(?:es)?\b/i, grams: 369, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*potato(?:es)?\b/i,          grams: 213, default: 1 },
+
+  { pattern: /\b(\d*\.?\d+)?\s*small\s+carrot[s]?\b/i, grams: 50, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*medium\s+carrot[s]?\b/i, grams: 61, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*large\s+carrot[s]?\b/i,  grams: 72, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*carrot[s]?\b/i,          grams: 61, default: 1 },
+
+  { pattern: /\b(\d*\.?\d+)?\s*burger[s]?\b/i, grams: 200, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*sandwich(?:es)?\b/i, grams: 250, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*slice(?:s)?\s+(?:of\s+)?pizza\b/i, grams: 107, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*slice(?:s)?\s+(?:of\s+)?bread\b/i, grams: 30, default: 1 },
+  
+  { pattern: /\b(\d*\.?\d+)?\s*strawberry(?:ies)?\b/i, grams: 12, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*grape(?:s)?\b/i, grams: 5, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*blueberry(?:ies)?\b/i, grams: 2, default: 1 },
+  
+  { pattern: /\b(\d*\.?\d+)?\s*cookie(?:s)?\b/i, grams: 15, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*cracker(?:s)?\b/i, grams: 3, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*muffin(?:s)?\b/i, grams: 110, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*can(?:s)?\s+(?:of\s+)?soda\b/i, grams: 355, default: 1 },
+
+  // Generic modifiers
   { pattern: /\b(\d*\.?\d+)?\s*large\b/i,    grams: 150, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*medium\b/i,   grams: 100, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*small\b/i,    grams: 70,  default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*bowl[s]?\b/i, grams: 250, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*big bowl[s]?\b/i, grams: 400, default: 1 },
+  { pattern: /\b(\d*\.?\d+)?\s*bowl[s]?\b/i, grams: 250, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*plate[s]?\b/i, grams: 350, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*cup[s]?\b/i,  grams: 240, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*glass(?:es)?\b/i, grams: 250, default: 1 },
@@ -70,9 +117,6 @@ const PORTION_MAP = [
   { pattern: /\b(\d*\.?\d+)?\s*oz\b/i,       grams: 28.35,default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*can[s]?\b/i,  grams: 400, default: 1 },
   { pattern: /\b(\d*\.?\d+)?\s*bottle[s]?\b/i, grams: 500, default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*egg[s]?\b/i,  grams: 60,  default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*banana[s]?\b/i, grams: 120, default: 1 },
-  { pattern: /\b(\d*\.?\d+)?\s*apple[s]?\b/i, grams: 182, default: 1 },
 ];
 
 const extractPortionFromSynonyms = (text) => {
@@ -121,25 +165,26 @@ export const processNaturalLanguageFood = async (text, customFoods = [], searchS
   // ── Tier 1: On-Device Regex NLP ──────────────────────────────────────────
   if (isDeviceCapable) {
     const regexPatterns = [
-      // Pattern 1: Amount Unit Food (e.g., "1.5 cups rice", "100 g chicken")
-      /(\d+(?:\.\d+)?)\s*(g|grams|oz|ml|cups?|tbsp|tsp|pieces?|slices?|large|small|medium|bowl|glass)?\s+([a-zA-Z\s]+)/i,
+      // Pattern 1: Amount Unit Food (e.g., "1.5 cups rice", "100 g chicken", "2 eggs")
+      // Now handles unitless counts better by making the unit group optional but requiring a boundary.
+      /^(\d+(?:\.\d+)?)\s*(g|grams|oz|lbs|pounds|ml|liters|l|cups?|tbsp|tsp|pieces?|slices?|large|small|medium|bowl|glass)?\s*(.+)$/i,
       // Pattern 2: Food Amount Unit (e.g., "rice 1.5 cups", "chicken 100g")
-      /([a-zA-Z\s]+)\s+(\d+(?:\.\d+)?)\s*(g|grams|oz|ml|cups?|tbsp|tsp|pieces?|slices?|large|small|medium|bowl|glass)?/i,
+      /^(.+)\s+(\d+(?:\.\d+)?)\s*(g|grams|oz|lbs|pounds|ml|liters|l|cups?|tbsp|tsp|pieces?|slices?|large|small|medium|bowl|glass)?$/i,
     ];
 
     for (const regex of regexPatterns) {
       const match = cleanedText.match(regex);
       if (match) {
-        if (isNaN(parseFloat(match[1]))) {
+        if (!isNaN(parseFloat(match[1]))) {
+          // Matched Pattern 1
+          amount = parseFloat(match[1]);
+          unit = match[2] ? match[2].toLowerCase() : '';
+          foodName = match[3].trim();
+        } else {
           // Matched Pattern 2
           foodName = match[1].trim();
           amount = parseFloat(match[2]);
-          unit = match[3] ? match[3].toLowerCase() : 'g';
-        } else {
-          // Matched Pattern 1
-          amount = parseFloat(match[1]);
-          unit = match[2] ? match[2].toLowerCase() : 'g';
-          foodName = match[3].trim();
+          unit = match[3] ? match[3].toLowerCase() : '';
         }
         processedOnDevice = true;
         confidence = 0.90; // Boosted confidence due to pre-cleaning
@@ -161,6 +206,12 @@ export const processNaturalLanguageFood = async (text, customFoods = [], searchS
       
       foodName = cleanedText.replace(/[0-9.]+/g, '').trim();
       
+      // If we're in Tier 2, we still want to check for portions if unit was defaulted
+      const portionCheck = extractPortionFromSynonyms(cleanedText);
+      if (portionCheck.matched) {
+        unit = ''; // Mark as portion-based to trigger the portion logic later
+      }
+
       processedOnDevice = false;
       confidence = 0.95;
       tier = 2;
@@ -191,14 +242,33 @@ export const processNaturalLanguageFood = async (text, customFoods = [], searchS
 
   // ── Unit → Grams Normalization ────────────────────────────────────────────
   let servingInGrams = amount;
-  if (unit.includes('oz'))   servingInGrams = amount * 28.35;
-  else if (unit.includes('cup'))  servingInGrams = amount * 240;
-  else if (unit.includes('tbsp')) servingInGrams = amount * 15;
-  else if (unit.includes('tsp'))  servingInGrams = amount * 5;
-  else if (unit.includes('piece') || unit.includes('slice') || unit === 'large' || unit === 'small' || unit === 'medium') {
-    servingInGrams = amount * 100;
-  } else if (unit.includes('bowl') || unit.includes('glass')) {
-    servingInGrams = amount * 250;
+  if (unit === 'g' || unit === 'grams' || unit === 'ml') {
+    servingInGrams = amount;
+  } else if (unit === 'lbs' || unit === 'pounds') {
+    servingInGrams = amount * 453.592;
+  } else if (unit === 'l' || unit === 'liters') {
+    servingInGrams = amount * 1000;
+  } else if (unit.includes('oz')) {
+    servingInGrams = amount * 28.35;
+  } else if (unit.includes('cup')) {
+    servingInGrams = amount * 240;
+  } else if (unit.includes('tbsp')) {
+    servingInGrams = amount * 15;
+  } else if (unit.includes('tsp')) {
+    servingInGrams = amount * 5;
+  } else {
+    // For unitless counts (like "2 eggs") or discrete units (like "1 slice")
+    const portion = extractPortionFromSynonyms(cleanedText);
+    if (portion.matched) {
+      servingInGrams = portion.grams;
+    } else {
+      // Generic fallbacks if PORTION_MAP doesn't catch it
+      if (unit.includes('piece') || unit.includes('slice') || unit === 'large' || unit === 'small' || unit === 'medium' || unit === '') {
+        servingInGrams = amount * 100;
+      } else if (unit.includes('bowl') || unit.includes('glass')) {
+        servingInGrams = amount * 250;
+      }
+    }
   }
 
   // ── Database Query ────────────────────────────────────────────────────────
@@ -225,21 +295,11 @@ export const processNaturalLanguageFood = async (text, customFoods = [], searchS
     return true;
   }).slice(0, 5);
 
-  // ── Source Label ──────────────────────────────────────────────────────────
-  const sourceLabel = {
-    1: 'On-Device AI (Local NLP)',
-    2: 'Cloud AI (Server Model)',
-    3: confidence >= 0.7
-      ? 'On-Device Basic (Smart Keywords)'
-      : 'On-Device Basic (Keyword Fallback)',
-  }[tier];
-
   return {
     success: combined.length > 0,
     foods: combined,
     extractedName: foodName,
     extractedServing: Math.round(servingInGrams),
-    source: sourceLabel,
     confidence,
     tier,
     message: combined.length > 0
